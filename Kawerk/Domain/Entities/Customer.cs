@@ -25,5 +25,9 @@ namespace Kawerk.Domain.Entities
         public string PostalCode { get; set; }
         [Column(TypeName ="varchar(200)")]
         public string ProfileUrl { get; set; }
+
+        //Relationships
+        public List<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+
     }
 }

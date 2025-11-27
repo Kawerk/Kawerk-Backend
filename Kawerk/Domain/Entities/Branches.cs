@@ -15,5 +15,9 @@ namespace Kawerk.Domain.Entities
         public string Description { get; set; }
         [Column(TypeName = "varchar(200)")]
         public string Warranty { get; set; }
+
+        //Relationships
+        public List<Salesman> Salesmen { get; set; } = new List<Salesman>();
+        public List<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     }
 }

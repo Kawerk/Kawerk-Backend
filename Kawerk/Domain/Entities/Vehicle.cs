@@ -28,5 +28,8 @@ namespace Kawerk.Domain.Entities
         public List<string> Images { get; set; }
 
         //Relationships
+        [Required]
+        public Manufacturer Manufacturer { get; set; }
+        public Customer? Customer { get; set; }
     }
 }

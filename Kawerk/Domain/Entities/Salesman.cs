@@ -20,5 +20,8 @@ namespace Kawerk.Domain.Entities
         public string City { get; set; }
         [Column(TypeName = "varchar(100)")]
         public string Region { get; set; }
+
+        //Relationships
+        public Branches Branche { get; set; }
     }
 }
