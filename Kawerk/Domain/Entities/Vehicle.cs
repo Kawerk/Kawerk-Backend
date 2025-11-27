@@ -31,5 +31,6 @@ namespace Kawerk.Domain.Entities
         [Required]
         public Manufacturer Manufacturer { get; set; }
         public Customer? Customer { get; set; }
+        public Transaction Transaction { get; set; }
     }
 }

@@ -28,6 +28,8 @@ namespace Kawerk.Domain.Entities
 
         //Relationships
         public List<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+        public List<Transaction> Purchases { get; set; } = new List<Transaction>();
+        public List<Transaction> Sells { get; set; } = new List<Transaction>();
 
     }
 }

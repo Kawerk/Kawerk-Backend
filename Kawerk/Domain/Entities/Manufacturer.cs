@@ -6,7 +6,7 @@ namespace Kawerk.Domain.Entities
     public class Manufacturer
     {
         [Key]
-        public int ManufacturerID { get; set; }
+        public Guid ManufacturerID { get; set; }
         [Column(TypeName = "varchar(100)")]
         public string Name { get; set; }
         [Column(TypeName = "varchar(2000)")]
@@ -18,6 +18,7 @@ namespace Kawerk.Domain.Entities
 
         //Relationships
         public List<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+        public List<Transaction> Transactions { get; set; } = new List<Transaction>();
 
     }
 }
