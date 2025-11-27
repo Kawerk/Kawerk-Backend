@@ -9,9 +9,9 @@ namespace Kawerk.Domain.Entities
         public DateTime CreatedDate { get; set; }
 
         //Relationships
-        public Customer Buyer { get; set; }
+        public required Customer Buyer { get; set; }
         public Guid BuyerID { get; set; }
-        public Vehicle Vehicle { get; set; }
+        public required Vehicle Vehicle { get; set; }
         public Guid VehicleID { get; set; }
         public Customer? SellerCustomer { get; set; }
         public Guid? SellerCustomerID { get; set; }

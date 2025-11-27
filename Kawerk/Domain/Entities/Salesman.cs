@@ -6,22 +6,22 @@ namespace Kawerk.Domain.Entities
     {
         public Guid SalesmanID { get; set; }
         [Column(TypeName = "nvarchar(100)")]
-        public string Name { get; set; }
+        public required string Name { get; set; }
         [Column(TypeName = "varchar(100)")]
-        public string Email { get; set; }
+        public required string Email { get; set; }
         [Column(TypeName = "varchar(200)")]
-        public string Password { get; set; }
+        public required string Password { get; set; }
         [Column(TypeName = "varchar(100)")]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
         public int Salary { get; set; }
         [Column(TypeName = "varchar(200)")]
-        public string Address { get; set; }
+        public string? Address { get; set; }
         [Column(TypeName = "varchar(100)")]
-        public string City { get; set; }
+        public string? City { get; set; }
         [Column(TypeName = "varchar(100)")]
-        public string Region { get; set; }
+        public string? Country { get; set; }
 
         //Relationships
-        public Branches Branche { get; set; }
+        public required Branches Branch { get; set; }
     }
 }

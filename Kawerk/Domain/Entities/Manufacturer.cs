@@ -8,13 +8,13 @@ namespace Kawerk.Domain.Entities
         [Key]
         public Guid ManufacturerID { get; set; }
         [Column(TypeName = "varchar(100)")]
-        public string Name { get; set; }
+        public required string Name { get; set; }
         [Column(TypeName = "varchar(2000)")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
         [Column(TypeName = "varchar(100)")]
-        public string Type { get; set; } // Cars or motorcycles , etc
+        public string? Type { get; set; } // Cars or motorcycles , etc
         [Column(TypeName = "varchar(200)")]
-        public string Warranty { get; set; }
+        public string? Warranty { get; set; }
 
         //Relationships
         public List<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
