@@ -4,6 +4,7 @@ using Kawerk;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kawerk.Migrations
 {
     [DbContext(typeof(DbBase))]
-    partial class DbBaseModelSnapshot : ModelSnapshot
+    [Migration("20251128180446_AddedCreatedAtForEntitiesAndFewChangesToVehicle")]
+    partial class AddedCreatedAtForEntitiesAndFewChangesToVehicle
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -214,7 +217,7 @@ namespace Kawerk.Migrations
                     b.Property<Guid?>("BranchesBranchID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("BuyerID")
+                    b.Property<Guid>("BuyerID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -232,7 +235,7 @@ namespace Kawerk.Migrations
                     b.PrimitiveCollection<string>("Images")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ManufacturerID")
+                    b.Property<Guid>("ManufacturerID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
@@ -245,7 +248,7 @@ namespace Kawerk.Migrations
                     b.Property<int>("SeatingCapacity")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("SellerID")
+                    b.Property<Guid>("SellerID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Status")
@@ -324,17 +327,20 @@ namespace Kawerk.Migrations
                     b.HasOne("Kawerk.Domain.Customer", "Buyer")
                         .WithMany("VehiclesBought")
                         .HasForeignKey("BuyerID")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.HasOne("Kawerk.Domain.Manufacturer", "Manufacturer")
                         .WithMany("Vehicles")
                         .HasForeignKey("ManufacturerID")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.HasOne("Kawerk.Domain.Customer", "Seller")
                         .WithMany("VehiclesSold")
                         .HasForeignKey("SellerID")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("Buyer");
 

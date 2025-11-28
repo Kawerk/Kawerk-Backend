@@ -15,6 +15,7 @@ namespace Kawerk.Domain
         public string? Description { get; set; }
         [Column(TypeName = "varchar(200)")]
         public string? Warranty { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         //Relationships
         public List<Salesman> Salesmen { get; set; } = new List<Salesman>();

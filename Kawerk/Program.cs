@@ -13,6 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
 
 builder.Services.AddDbContext<DbBase>(options =>
 {

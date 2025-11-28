@@ -20,6 +20,7 @@ namespace Kawerk.Domain
         public string? City { get; set; }
         [Column(TypeName = "varchar(100)")]
         public string? Country { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         //Relationships
         public required Branches Branch { get; set; }
