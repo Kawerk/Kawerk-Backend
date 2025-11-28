@@ -17,6 +17,8 @@ namespace Kawerk.Application.Services
             _db = db;
         }
 
+
+        //Setters
         public async Task<int> CreateCustomer(CustomerCreationDTO customer)//0 == Faulty DTO || 1 == Invalid Email || 2 == Invalid Password || 3 == Customer already Exists || 4 == Customer created Succesfully
         {
             //Checking customerDTO validity
@@ -69,7 +71,7 @@ namespace Kawerk.Application.Services
             if (!string.IsNullOrEmpty(customer.Username))
             {
                 //If username is not in use then we change to it
-                if (await isUsernameValid(customer.Username))
+                if (!await isUsernameValid(customer.Username) || customer.Username.ToLower() == isCustomerExists.Username.ToLower())
                     isCustomerExists.Username = customer.Username;
                 //If it is in user we return
                 else
@@ -154,9 +156,7 @@ namespace Kawerk.Application.Services
 
         //-----------------------------------------------------------------------
 
-
         //Getters
-
         public async Task<CustomerDTO?> GetCustomer(Guid customerID)
         {
             //Getting customer from Database and projecting to CustomerDTO
@@ -177,7 +177,6 @@ namespace Kawerk.Application.Services
             //Returning Customer
             return customer;
         }
-
         public async Task<List<CustomerDTO>?> GetCustomers()
         {
             //Getting customers from Database and projecting to CustomerDTO
