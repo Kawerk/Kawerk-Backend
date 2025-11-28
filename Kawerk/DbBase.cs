@@ -1,4 +1,4 @@
-﻿using Kawerk.Domain.Entities;
+﻿using Kawerk.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kawerk

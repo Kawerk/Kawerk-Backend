@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kawerk.Domain.Entities
+namespace Kawerk.Domain
 {
     public class Customer
     {
