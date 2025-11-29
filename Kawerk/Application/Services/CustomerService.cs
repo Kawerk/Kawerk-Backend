@@ -68,6 +68,8 @@ namespace Kawerk.Application.Services
             if (isCustomerExists == null)
                 return 1;
 
+            // --***Updating***--
+
             //If the user wants to change their username, we must first check if the username is in use
             if (!string.IsNullOrEmpty(customer.Username))
             {
