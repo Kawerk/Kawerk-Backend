@@ -145,12 +145,12 @@ namespace Kawerk.Application.Services
                                               Name = b.Name,
                                               Description = b.Description,
                                               Location = b.Location,
+                                              CreatedAt = b.CreatedAt
                                           }).FirstOrDefaultAsync();
             //returning result
             return isBranchExisting;
         }
-
-        public async Task<List<BranchDTO>?> GetBranchs()
+        public async Task<List<BranchDTO>?> GetBranches()
         {
             //Getting branches from Database and projecting to BranchDTO
             var branchQuery = await(from b in _db.Branches
@@ -160,6 +160,7 @@ namespace Kawerk.Application.Services
                                              Name = b.Name,
                                              Description = b.Description,
                                              Location = b.Location,
+                                             CreatedAt = b.CreatedAt
                                          }).ToListAsync();
             //returning result
             return branchQuery;

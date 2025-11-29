@@ -8,6 +8,6 @@ namespace Kawerk.Application.Interfaces
         public Task<int> UpdateBranch(Guid branchID,BranchUpdateDTO branch);
         public Task<int> DeleteBranch(Guid branchID);
         public Task<BranchDTO?> GetBranch(Guid branchID);
-        public Task<List<BranchDTO>?> GetBranchs();
+        public Task<List<BranchDTO>?> GetBranches();
     }
 }
