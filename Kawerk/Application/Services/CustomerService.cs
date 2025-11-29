@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.ComponentModel.DataAnnotations;
+using Kawerk.Infastructure.Context;
 
 namespace Kawerk.Application.Services
 {
@@ -18,7 +19,7 @@ namespace Kawerk.Application.Services
         }
 
 
-        //Setters
+        //        *********** Setters ***********
         public async Task<int> CreateCustomer(CustomerCreationDTO customer)//0 == Faulty DTO || 1 == Invalid Email || 2 == Invalid Password || 3 == Customer already Exists || 4 == Customer created Succesfully
         {
             //Checking customerDTO validity
@@ -121,7 +122,7 @@ namespace Kawerk.Application.Services
         //-----------------------------------------------------------------------
 
 
-        //Extra Validation Functions
+        //        *********** Extra Validation Function ***********
 
         public async Task<bool> isUsernameValid(string username)
         {
@@ -156,7 +157,7 @@ namespace Kawerk.Application.Services
 
         //-----------------------------------------------------------------------
 
-        //Getters
+        //        *********** Getters ***********
         public async Task<CustomerDTO?> GetCustomer(Guid customerID)
         {
             //Getting customer from Database and projecting to CustomerDTO

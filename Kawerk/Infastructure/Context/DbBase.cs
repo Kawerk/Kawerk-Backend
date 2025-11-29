@@ -1,7 +1,7 @@
 ﻿using Kawerk.Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kawerk
+namespace Kawerk.Infastructure.Context
 {
     public class DbBase : DbContext
     {
