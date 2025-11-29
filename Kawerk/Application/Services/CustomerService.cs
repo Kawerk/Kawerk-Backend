@@ -72,7 +72,7 @@ namespace Kawerk.Application.Services
             if (!string.IsNullOrEmpty(customer.Username))
             {
                 //If username is not in use then we change to it
-                if (!await isUsernameValid(customer.Username) || customer.Username.ToLower() == isCustomerExists.Username.ToLower())
+                if (customer.Username.ToLower() == isCustomerExists.Username.ToLower() || !await isUsernameValid(customer.Username))
                     isCustomerExists.Username = customer.Username;
                 //If it is in user we return
                 else

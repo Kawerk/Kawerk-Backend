@@ -23,7 +23,7 @@ namespace Kawerk.Application.Services
                 return 0;
             
             //Checking if name is already in use or not
-            if(!await isNameValid(manufacturer.Name))
+            if(await isNameValid(manufacturer.Name))
                 return 1;
 
             //Making the new Manufacturer
@@ -40,7 +40,7 @@ namespace Kawerk.Application.Services
             await _db.SaveChangesAsync();
             return 2;
         }
-        public async Task<int> UpdateManufacturer(Guid manufacturerID, ManufacturerUpdateDTO manufacturer)//0 == Faulty DTO || 1 == Manufacturer not found || 2 == Successfull
+        public async Task<int> UpdateManufacturer(Guid manufacturerID, ManufacturerUpdateDTO manufacturer)//0 == Faulty DTO || 1 == Manufacturer not found || 2 == Name is already in use || 3 == Successfull
         {
             //Checking DTO validity
             if (manufacturer == null)
@@ -58,7 +58,7 @@ namespace Kawerk.Application.Services
             if (!string.IsNullOrEmpty(isManufacturerExists.Name))
             {
                 //If not in use update the name and continue
-                if (!await isNameValid(manufacturer.Name))
+                if (isManufacturerExists.Name.ToLower() == manufacturer.Name.ToLower() || !await isNameValid(manufacturer.Name))
                     isManufacturerExists.Name = manufacturer.Name;
                 //if in use return
                 else
@@ -103,9 +103,9 @@ namespace Kawerk.Application.Services
 
         //        *********** Extra Validation Function ***********
 
-        public async Task<bool> isNameValid(string name)
+        public async Task<bool> isNameValid(string name)//returns true if name is in user
         {
-            var result =await _db.Manufacturers.AnyAsync(x => x.Name == name);
+            var result = await _db.Manufacturers.AnyAsync(x => x.Name == name);
             return result;
         }
 
