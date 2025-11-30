@@ -46,7 +46,8 @@ namespace Kawerk.Application.Services
                 Name = customer.Name,
                 Username = customer.Username,
                 Email = customer.Email,
-                Password = new PasswordHasher<Customer>().HashPassword(null, customer.Password)
+                Password = new PasswordHasher<Customer>().HashPassword(null, customer.Password),
+                CreatedAt = DateTime.Now,
             };
 
             //Saving to Database
