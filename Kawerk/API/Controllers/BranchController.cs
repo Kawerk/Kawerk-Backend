@@ -15,38 +15,28 @@ namespace Kawerk.API.Controllers
         public async Task<IActionResult> CreateBranch([FromBody]BranchCreationDTO branch)
         {
             var result = await _branchService.CreateBranch(branch);
-            if (result == 2)
-                return Ok(new { message = "Branch created Succesfully" });
-            else if (result == 1)
-                return BadRequest(new { message = "Name or Location already in use" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Faulty DTO given" });
+                return Ok(new { message = result.msg });
         }
         [HttpPut("UpdateBranch")]
         public async Task<IActionResult> UpdateBranch([FromQuery]Guid branchID,[FromBody] BranchUpdateDTO branch)
         {
             var result = await _branchService.UpdateBranch(branchID, branch);
-            if (result == 4)
-                return Ok(new { message = "Branch updated Succesfully" });
-           else if (result == 3)
-                return BadRequest(new { message = "Location already in use" });
-            else if (result == 2)
-                return BadRequest(new { message = "Name already in use" });
-            else if (result == 1)
-                return BadRequest(new { message = "Branch not found" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Faulty DTO given" });
+                return Ok(new { message = result.msg });
         }
         [HttpDelete("DeleteBranch")]
         public async Task<IActionResult> DeleteBranch([FromQuery]Guid branchID)
         {
             var result = await  _branchService.DeleteBranch(branchID);
-            if (result == 2)
-                return Ok(new { message = "Branch deleted Succesfully" });
-            else if (result == 1)
-                return BadRequest(new { message = "Branch not found" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Faulty DTO given" });
+                return Ok(new { message = result.msg });
         }
         [HttpGet("GetBranch")]
         public async Task<IActionResult> GetBranch([FromQuery]Guid branchID)

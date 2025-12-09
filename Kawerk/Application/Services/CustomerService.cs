@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.ComponentModel.DataAnnotations;
 using Kawerk.Infastructure.Context;
 using Kawerk.Infastructure.DTOs.Customer;
+using Kawerk.Infastructure.ResponseClasses;
 
 namespace Kawerk.Application.Services
 {
@@ -20,24 +21,24 @@ namespace Kawerk.Application.Services
 
 
         //        *********** Setters ***********
-        public async Task<int> CreateCustomer(CustomerCreationDTO customer)//0 == Faulty DTO || 1 == Invalid Email || 2 == Invalid Password || 3 == Customer already Exists || 4 == Customer created Succesfully
+        public async Task<SettersResponse> CreateCustomer(CustomerCreationDTO customer)//0 == Faulty DTO || 1 == Invalid Email || 2 == Invalid Password || 3 == Customer already Exists || 4 == Customer created Succesfully
         {
             //Checking customerDTO validity
             if(customer == null)
-                return 0;
+                return new SettersResponse { status = 0, msg = "Faulty DTO" };
 
             if (!IsEmailValid(customer.Email))
-                return 1;
+                return new SettersResponse { status = 0, msg = "Invalid Email" };
 
             if(!await IsPasswordValid(customer.Password))
-                return 2;
+                return new SettersResponse { status = 0, msg = "Invalid Password" };
 
             //Checking if User already exists
             var isCustomerExists = await _db.Customers.AnyAsync(c=>c.Username.ToLower() == customer.Username.ToLower() ||
                                                      c.Email.ToLower() == customer.Email.ToLower());
             //If User exists return
             if (isCustomerExists)
-                return 3;
+                return new SettersResponse { status = 0, msg = "Customer already exists" };
 
             //Creating new Customer
             Customer newCustomer = new Customer
@@ -53,13 +54,13 @@ namespace Kawerk.Application.Services
             //Saving to Database
             await _db.Customers.AddAsync(newCustomer);
             await _db.SaveChangesAsync();
-            return 4;
+            return new SettersResponse { status = 1, msg = "Customer created successfully" };
         }
-        public async Task<int> UpdateCustomer(Guid customerID,CustomerUpdateDTO customer)//0 == Faulty DTO || 1 == Customer does not exist  || 2 == username is already used || 3 == Updated Successful
+        public async Task<SettersResponse> UpdateCustomer(Guid customerID,CustomerUpdateDTO customer)//0 == Faulty DTO || 1 == Customer does not exist  || 2 == username is already used || 3 == Updated Successful
         {
             //Checking DTO validity
             if (customer == null)
-                return 0;
+                return new SettersResponse { status = 0, msg = "Faulty DTO" };
 
             //Checking if User Exists
             var isCustomerExists = await (from c in _db.Customers
@@ -67,7 +68,7 @@ namespace Kawerk.Application.Services
                                           select c).FirstOrDefaultAsync();
             //If User does not exist return
             if (isCustomerExists == null)
-                return 1;
+                return new SettersResponse { status = 0, msg = "Customer does not exist" };
 
             // --***Updating***--
 
@@ -79,7 +80,7 @@ namespace Kawerk.Application.Services
                     isCustomerExists.Username = customer.Username;
                 //If it is in user we return
                 else
-                    return 2;
+                    return new SettersResponse { status = 0, msg = "Username is already used" };
             }
             //Updating Phone field
             if(!string.IsNullOrEmpty(customer.Phone))
@@ -100,13 +101,13 @@ namespace Kawerk.Application.Services
             //Saving to Database
             _db.Customers.Update(isCustomerExists);
             await _db.SaveChangesAsync();
-            return 3;
+            return new SettersResponse { status = 1, msg = "Updated Successfully" };
         }
-        public async Task<int> DeleteCustomer(Guid customerID)//0 == Faulty customerID || 1 == Customer not found || 2 == Customer Deleted Successfully
+        public async Task<SettersResponse> DeleteCustomer(Guid customerID)
         {
             //Checking ID validity
             if (customerID == Guid.Empty)
-                return 0;
+                return new SettersResponse { status = 0, msg = "Faulty customerID" };
 
             //Getting curstomer from Database
             var isCustomerExists = await (from  c in _db.Customers
@@ -114,12 +115,12 @@ namespace Kawerk.Application.Services
                                           select c).FirstOrDefaultAsync();
             //If customer not found return
             if (isCustomerExists == null)
-                return 1;
+                return new SettersResponse { status = 0, msg = "Customer not found" };
 
             //Saving to Database
             _db.Customers.Remove(isCustomerExists);
             await _db.SaveChangesAsync();
-            return 2;
+            return new SettersResponse { status = 1, msg = "Customer Deleted Successfully" };
         }
 
         //-----------------------------------------------------------------------

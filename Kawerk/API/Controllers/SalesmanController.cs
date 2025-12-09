@@ -16,39 +16,29 @@ namespace Kawerk.API.Controllers
         {
             var result = await _salesmanService.CreateSalesman(salesman);
 
-            if (result == 4)
-                return Ok(new { message = "Salesman created Succesfully" });
-            else if (result == 3)
-                return BadRequest(new { message = "Branch not found" });
-            else if (result == 2)
-                return BadRequest(new { message = "Invalid Password" });
-            else if (result == 1)
-                return BadRequest(new { message = "Invalid Email" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Faulty DTO" });
+                return Ok(new { message = result.msg });
         }
         [HttpPut("UpdateSalesman")]
         public async Task<IActionResult> UpdateSalesman([FromQuery] Guid salesmanID, [FromBody] SalesmanUpdateDTO salesman)
         {
             var result = await _salesmanService.UpdateSalesman(salesmanID, salesman);
-            if (result == 2)
-                return Ok(new { message = "Saleman Updated Successfully" });
-            else if (result == 1)
-                return BadRequest(new { message = "Saleman not found" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Faulty DTO" });
+                return Ok(new { message = result.msg });
         }
         [HttpDelete("DeleteSalesman")]
         public async Task<IActionResult> DeleteSalesman([FromQuery] Guid salesmanID)
         {
             var result = await _salesmanService.DeleteSalesman(salesmanID);
 
-            if (result == 2)
-                return Ok(new { message = "Salesman Deleted Succesfully" });
-            else if (result == 1)
-                return BadRequest(new { message = "Saleman not found" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Faulty DTO" });
+                return Ok(new { message = result.msg });
         }
         [HttpGet("GetSalesman")]
         public async Task<IActionResult> GetSalesman([FromQuery]Guid salesmanID)

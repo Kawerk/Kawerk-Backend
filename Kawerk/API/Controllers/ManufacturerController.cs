@@ -15,37 +15,29 @@ namespace Kawerk.API.Controllers
         public async Task<IActionResult> CreateManufacturer([FromBody] ManufacturerCreationDTO manufacturer)
         {
             var result = await _manufacturerService.CreateManufacturer(manufacturer);
-            if (result == 2)
-                return Ok(new { message = "Manufacturer created successsfully" });
-            else if (result == 1)
-                return BadRequest(new { message = "Name is already in use" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Faulty DTO given" });
+                return Ok(new { message = result.msg });
         }
         [HttpPut("UpdateManufacturer")]
         public async Task<IActionResult> UpdateManufacturer([FromQuery]Guid manufacturerGuid, [FromBody] ManufacturerUpdateDTO manufacturer)
         {
             var result = await _manufacturerService.UpdateManufacturer(manufacturerGuid, manufacturer);
-            if(result == 3)
-                return Ok(new { message = "Manufacturer Updated successsfully" });
-            else if (result == 2)
-                return BadRequest(new { message = "Name is already in use" });
-            else if (result == 1)
-                return BadRequest(new { message = "Manufacturer not found" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Faulty DTO given" });
+                return Ok(new { message = result.msg });
         }
         [HttpDelete("DeleteManufacturer")]
         public async Task<IActionResult> DeleteManufacturer([FromQuery]Guid manufacturerID)
         {
             var result = await _manufacturerService.DeleteManufacturer(manufacturerID);
 
-            if (result == 2)
-                return Ok(new { message = "Manufacturer deleated successsfully" });
-            else if (result == 1)
-                return BadRequest(new { message = "Manufacturer not found" });
+            if(result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Faulty ID given" });
+                return Ok(new { message = result.msg });
         }
         [HttpGet("GetManufacturer")]
         public async Task<IActionResult> GetManufacturer([FromQuery] Guid manufacturerID)

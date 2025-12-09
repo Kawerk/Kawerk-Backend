@@ -2,6 +2,7 @@
 using Kawerk.Domain;
 using Kawerk.Infastructure.Context;
 using Kawerk.Infastructure.DTOs.Salesman;
+using Kawerk.Infastructure.ResponseClasses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
@@ -17,19 +18,19 @@ namespace Kawerk.Application.Services
         }
 
         //        *********** Setters ***********
-        public async Task<int> CreateSalesman(SalesmanCreationDTO salesman)
+        public async Task<SettersResponse> CreateSalesman(SalesmanCreationDTO salesman)
         {
             //Checking DTO validity
             if (salesman == null)
-                return 0;
+                return new SettersResponse { status = 0, msg = "Faulty DTO" };
 
             //Checking email validity
             if (!IsEmailValid(salesman.Email))
-                return 1;
+                return new SettersResponse { status = 0, msg = "Invalid email format" };
 
             //Checking Password validity
             if(!await IsPasswordValid(salesman.Password))
-                return 2;
+                return new SettersResponse { status = 0, msg = "Weak password" };
 
             //Getting branch from Database
             var isBranchExists = await (from b in _db.Branches
@@ -37,7 +38,7 @@ namespace Kawerk.Application.Services
                                         select b).FirstOrDefaultAsync();
             //If branch not found return
             if (isBranchExists == null)
-                return 3;
+                return new SettersResponse { status = 0, msg = "Branch not found" };
 
             //Making the new salesman
             Salesman newSalesman = new Salesman
@@ -53,13 +54,13 @@ namespace Kawerk.Application.Services
             //Saving to Database
             await _db.Salesman.AddAsync(newSalesman);
             await _db.SaveChangesAsync();
-            return 4;
+            return new SettersResponse { status = 1, msg = "Salesman created successfully" };
         }
-        public async Task<int> UpdateSalesman(Guid salesmanID, SalesmanUpdateDTO salesman)
+        public async Task<SettersResponse> UpdateSalesman(Guid salesmanID, SalesmanUpdateDTO salesman)
         {
             //Checking DTO validity
             if (salesman == null)
-                return 0;
+                return new SettersResponse { status = 0, msg = "Faulty DTO" };
 
             //Getting salesman from Database
             var isSalesmanExists = await (from s in _db.Salesman
@@ -67,7 +68,7 @@ namespace Kawerk.Application.Services
                                           select s).FirstOrDefaultAsync();
             //If not found return
             if (isSalesmanExists == null)
-                return 1;
+                return new SettersResponse { status = 0, msg = "Salesman not found" };
 
             //Updating name
             if(!string.IsNullOrEmpty(salesman.Name))
@@ -88,16 +89,16 @@ namespace Kawerk.Application.Services
             if(salesman.Salary != 0)
                 isSalesmanExists.Salary = salesman.Salary;
 
-            //Savint to Database
+            //Saving to Database
             _db.Salesman.Update(isSalesmanExists);
             await _db.SaveChangesAsync();
-            return 2;
+            return new SettersResponse { status = 1, msg = "Salesman updated successfully" };
         }
-        public async Task<int> DeleteSalesman(Guid salesmanID)
+        public async Task<SettersResponse> DeleteSalesman(Guid salesmanID)
         {
             //Checking ID validity
             if (salesmanID == Guid.Empty)
-                return 0;
+                return new SettersResponse { status = 0, msg = "Faulty ID" };
 
             //Getting salesman from Database
             var isSalesmanExists = await (from s in _db.Salesman
@@ -105,12 +106,12 @@ namespace Kawerk.Application.Services
                                           select s).FirstOrDefaultAsync();
             //If not found return
             if (isSalesmanExists == null)
-                return 1;
+                return new SettersResponse { status = 0, msg = "Salesman not found" };
 
             //Saving to Database
             _db.Salesman.Remove(isSalesmanExists);
             await _db.SaveChangesAsync();
-            return 2;
+            return new SettersResponse { status = 1, msg = "Salesman deleted successfully" };
         }
         //-----------------------------------------------------------------------
 

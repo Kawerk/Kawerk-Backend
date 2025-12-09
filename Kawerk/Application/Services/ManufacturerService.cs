@@ -2,6 +2,7 @@
 using Kawerk.Domain;
 using Kawerk.Infastructure.Context;
 using Kawerk.Infastructure.DTOs.Manufacturer;
+using Kawerk.Infastructure.ResponseClasses;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kawerk.Application.Services
@@ -16,15 +17,15 @@ namespace Kawerk.Application.Services
 
 
         //        *********** Setters ***********
-        public async Task<int> CreateManufacturer(ManufacturerCreationDTO manufacturer)//0 == Faulty DTO || 1 == Name is already in use || 2 == Successful
+        public async Task<SettersResponse> CreateManufacturer(ManufacturerCreationDTO manufacturer)//0 == Faulty DTO || 1 == Name is already in use || 2 == Successful
         {
             //Checking DTO validity
             if (manufacturer == null)
-                return 0;
-            
+                return new SettersResponse { status = 0, msg = "Faulty DTO" };
+
             //Checking if name is already in use or not
             if(await isNameValid(manufacturer.Name))
-                return 1;
+                return new SettersResponse { status = 0, msg = "Name is already in use" };
 
             //Making the new Manufacturer
             Manufacturer newManufacturer = new Manufacturer
@@ -38,13 +39,13 @@ namespace Kawerk.Application.Services
             //Saving to Database
             await _db.Manufacturers.AddAsync(newManufacturer);
             await _db.SaveChangesAsync();
-            return 2;
+            return new SettersResponse { status = 1, msg = "Manufacturer created successfully" };
         }
-        public async Task<int> UpdateManufacturer(Guid manufacturerID, ManufacturerUpdateDTO manufacturer)//0 == Faulty DTO || 1 == Manufacturer not found || 2 == Name is already in use || 3 == Successfull
+        public async Task<SettersResponse> UpdateManufacturer(Guid manufacturerID, ManufacturerUpdateDTO manufacturer)//0 == Faulty DTO || 1 == Manufacturer not found || 2 == Name is already in use || 3 == Successfull
         {
             //Checking DTO validity
             if (manufacturer == null)
-                return 0;
+                return new SettersResponse { status = 0, msg = "Faulty DTO" };
 
             //Getting Manufacturer from Database
             var isManufacturerExists = await (from m in _db.Manufacturers
@@ -52,7 +53,7 @@ namespace Kawerk.Application.Services
                                               select m).FirstOrDefaultAsync();
             //If Manufacturer not found return
             if (isManufacturerExists == null)
-                return 1;
+                return new SettersResponse { status = 0, msg = "Manufacturer not found" };
 
             //If they want to change the name we should check if the new name is in use or not
             if (!string.IsNullOrEmpty(isManufacturerExists.Name))
@@ -62,7 +63,7 @@ namespace Kawerk.Application.Services
                     isManufacturerExists.Name = manufacturer.Name;
                 //if in use return
                 else
-                    return 2;
+                    return new SettersResponse { status = 0, msg = "Name is already in use" };
             }
             //Updating Description
             if(!string.IsNullOrEmpty(manufacturer.Description))
@@ -77,13 +78,13 @@ namespace Kawerk.Application.Services
             //Saving to Database
             _db.Manufacturers.Update(isManufacturerExists);
             await _db.SaveChangesAsync();
-            return 3;
+            return new SettersResponse { status = 1, msg = "Manufacturer updated successfully" };
         }
-        public async Task<int> DeleteManufacturer(Guid manufacturerID)//0 == Faulty ID || 1 == Manufacturer not found || 2 == Succcessfull
+        public async Task<SettersResponse> DeleteManufacturer(Guid manufacturerID)//0 == Faulty ID || 1 == Manufacturer not found || 2 == Succcessfull
         {
             //Checking ID validity
             if (manufacturerID == Guid.Empty)
-                return 0;
+                return new SettersResponse { status = 0, msg = "Faulty ID" };
 
             //Getting Manufacturer from Database
             var isManufacturerExists = await(from m in _db.Manufacturers
@@ -91,13 +92,12 @@ namespace Kawerk.Application.Services
                                              select m).FirstOrDefaultAsync();
             //If manufacturer not found return
             if(isManufacturerExists == null)
-                return 1;
+                return new SettersResponse { status = 0, msg = "Manufacturer not found" };
 
             //Saving to Database
             _db.Manufacturers.Remove(isManufacturerExists);
             await _db.SaveChangesAsync();
-            return 2;
-
+            return new SettersResponse { status = 1, msg = "Manufacturer deleted successfully" };   
         }
         //--------------------------------------------
 

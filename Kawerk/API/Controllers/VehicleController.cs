@@ -16,34 +16,30 @@ namespace Kawerk.API.Controllers
         public async Task<IActionResult> CreateVehicle([FromBody]VehicleDTO vehicle)
         {
             var result = await _vehicleService.CreateVehicle(vehicle);
-            if (result == 1)
-                return Ok(new { message = "Vehicle created Succesfully" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Faulty DTO given" });
+                return Ok(new { message = result.msg });
         }
         [HttpPut("UpdateVehicle")]
         public async Task<IActionResult> UpdateVehicle([FromQuery]Guid vehicleID,[FromBody]VehicleDTO vehicle)
         {
             var result = await _vehicleService.UpdateVehicle(vehicleID, vehicle);
 
-            if (result == 2)
-                return Ok(new { message = "Vehicle Updated Succesfully" });
-            else if (result == 1)
-                return BadRequest(new { message = "Vehicle not found" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Faulty DTO given" });
+                return Ok(new { message = result.msg });
         }
         [HttpDelete("DeleteVehicle")]
         public async Task<IActionResult> DeleteVehicle([FromQuery] Guid vehicleID)
         {
             var result = await _vehicleService.DeleteVehicle(vehicleID);
 
-            if (result == 2)
-                return Ok(new { message = "Vehicle deleted Succesfully" });
-            else if (result == 1)
-                return BadRequest(new { message = "Vehicle not found" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Faulty DTO given" });
+                return Ok(new { message = result.msg });
         }
         [HttpGet("GetVehicle")]
         public async Task<IActionResult> GetVehicle([FromQuery] Guid vehicleID)

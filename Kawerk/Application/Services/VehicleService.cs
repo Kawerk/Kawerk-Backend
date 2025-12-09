@@ -2,6 +2,7 @@
 using Kawerk.Domain;
 using Kawerk.Infastructure.Context;
 using Kawerk.Infastructure.DTOs.Vehicle;
+using Kawerk.Infastructure.ResponseClasses;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kawerk.Application.Services
@@ -16,10 +17,10 @@ namespace Kawerk.Application.Services
 
         //
         //        *********** Setters ***********
-        public async Task<int> CreateVehicle(VehicleDTO vehicle)//0 == Faulty DTO || 1 == Successful
+        public async Task<SettersResponse> CreateVehicle(VehicleDTO vehicle)//0 == Faulty DTO || 1 == Successful
         {
             if (vehicle == null)
-                return 0;
+                return new SettersResponse { status = 0, msg = "Faulty DTO" };
 
             Vehicle newVehicle = new Vehicle
             {
@@ -39,14 +40,13 @@ namespace Kawerk.Application.Services
 
             await _db.Vehicles.AddAsync(newVehicle);
             await _db.SaveChangesAsync();
-            return 1;
-
+            return new SettersResponse { status = 1, msg = "Vehicle created successfully" };
         }
-        public async Task<int> UpdateVehicle(Guid vehicleID,VehicleDTO vehicle)//0 == Faulty DTO || 1 == Vehicle not found || 2 == Successful
+        public async Task<SettersResponse> UpdateVehicle(Guid vehicleID,VehicleDTO vehicle)//0 == Faulty DTO || 1 == Vehicle not found || 2 == Successful
         {
             //Checking DTO validity
             if (vehicle == null)
-                return 0;
+                return new SettersResponse { status = 0, msg = "Faulty DTO" };
 
             //Getting Vehicle from Database
             var isVehicleExists = await (from v in _db.Vehicles
@@ -54,7 +54,7 @@ namespace Kawerk.Application.Services
                                          select v).FirstOrDefaultAsync();
             //If vehicle not found return
             if (isVehicleExists == null)
-                return 1;
+                return new SettersResponse { status = 0, msg = "Vehicle not found" };
 
             // --***Updating***--
             
@@ -88,13 +88,13 @@ namespace Kawerk.Application.Services
             //Saving to Database
             _db.Vehicles.Update(isVehicleExists);
             await _db.SaveChangesAsync();
-            return 2;
+            return new SettersResponse { status = 1, msg = "Vehicle updated successfully" };
         }
-        public async Task<int> DeleteVehicle(Guid vehicleID)//0 == Faulty ID || 1 == Vehicle not found || 2 == Successful
+        public async Task<SettersResponse> DeleteVehicle(Guid vehicleID)//0 == Faulty ID || 1 == Vehicle not found || 2 == Successful
         {
             //Checking ID validity
             if (vehicleID == Guid.Empty)
-                return 0;
+                return new SettersResponse { status = 0, msg = "Faulty ID" };
 
             //Getting vehicle from Database
             var isVehicleExists = await (from v in _db.Vehicles
@@ -102,12 +102,12 @@ namespace Kawerk.Application.Services
                                          select v).FirstOrDefaultAsync();
             //If vehicle not found return
             if (isVehicleExists == null)
-                return 1;
+                return new SettersResponse { status = 0, msg = "Vehicle not found" };
 
             //Saving to Database
             _db.Vehicles.Remove(isVehicleExists);
             await _db.SaveChangesAsync();
-            return 2;
+            return new SettersResponse { status = 1, msg = "Vehicle deleted successfully" };
         }
 
         //--------------------------------------------

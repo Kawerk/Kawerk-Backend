@@ -17,16 +17,10 @@ namespace Kawerk.API.Controllers
         {
             var result = await _customerService.CreateCustomer(customer);
 
-            if (result == 4)
-                return Ok(new { message = "Customer Created Succesfully" });
-            else if (result == 3)
-                return BadRequest(new { message = "Customer already Exists" });
-            else if (result == 2)
-                return BadRequest(new { message = "Invalid Password" });
-            else if (result == 1)
-                return BadRequest(new { message = "Invalid Email" });
+            if(result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Invalid DTO" });
+                return Ok(new { message = result.msg });
         }
 
         [HttpPut("UpdateCustomer")]
@@ -34,14 +28,10 @@ namespace Kawerk.API.Controllers
         {
             var result = await _customerService.UpdateCustomer(customerID, customer);
 
-            if (result == 3)
-                return Ok(new { message = "Updated Successfully" });
-            else if (result == 2)
-                return BadRequest(new { message = "Username already in use" });
-            else if (result == 1)
-                return BadRequest(new { message = "Customer does not exist" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Invalid DTO" });
+                return Ok(new { message = result.msg });
 
         }
 
@@ -50,12 +40,10 @@ namespace Kawerk.API.Controllers
         {
             var result = await _customerService.DeleteCustomer(customerID);
 
-            if (result == 2)
-                return Ok(new { message = "Customer Deleted Successfully" });
-            else if (result == 1)
-                return BadRequest(new { message = "Customer does not exist" });
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
             else
-                return BadRequest(new { message = "Invalid DTO" });
+                return Ok(new { message = result.msg });
 
         }
 
