@@ -1,12 +1,12 @@
-﻿using Kawerk.Application.Interfaces;
-using Kawerk.Domain;
+﻿using Kawerk.Domain;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+using Kawerk.Infastructure.DTOs.Vehicle;
 using System.ComponentModel.DataAnnotations;
 using Kawerk.Infastructure.Context;
 using Kawerk.Infastructure.DTOs.Customer;
 using Kawerk.Infastructure.ResponseClasses;
+using Kawerk.Application.Interfaces;
 
 namespace Kawerk.Application.Services
 {
@@ -122,6 +122,116 @@ namespace Kawerk.Application.Services
             await _db.SaveChangesAsync();
             return new SettersResponse { status = 1, msg = "Customer Deleted Successfully" };
         }
+        public async Task<SettersResponse> BuyVehicle(Guid customerID, Guid vehicleID)
+        {
+            if (customerID == Guid.Empty || vehicleID == Guid.Empty)
+                return new SettersResponse { status = 0, msg = "Invalid identifiers." };
+
+            // Load buyer and vehicle with seller/manufacturer navigations
+            var buyer = await _db.Customers.FindAsync(customerID);
+            if (buyer == null)
+                return new SettersResponse { status = 0, msg = "Buyer not found." };
+
+            var vehicle = await _db.Vehicles
+                .Include(v => v.Seller)
+                .Include(v => v.Manufacturer)
+                .FirstOrDefaultAsync(v => v.VehicleID == vehicleID);
+
+            if (vehicle == null)
+                return new SettersResponse { status = 0, msg = "Vehicle not found." };
+
+            if (vehicle.BuyerID != null)
+                return new SettersResponse { status = 0, msg = "Vehicle already sold." };
+
+            if (vehicle.SellerID == customerID)
+                return new SettersResponse { status = 0, msg = "Seller trying to buy his own car" };
+
+            // Use a DB transaction to avoid races
+            await using var tx = await _db.Database.BeginTransactionAsync();
+            try
+            {
+                // Re-check inside transaction in case of concurrent changes
+                var currentVehicle = await _db.Vehicles
+                    .AsTracking()
+                    .FirstOrDefaultAsync(v => v.VehicleID == vehicleID);
+
+                if (currentVehicle == null)
+                    return new SettersResponse { status = 0, msg = "Vehicle not found." };
+
+                if (currentVehicle.BuyerID != null)
+                    return new SettersResponse { status = 0, msg = "Vehicle already sold." };
+
+                // Create transaction record
+                var transaction = new Transaction
+                {
+                    TransactionID = Guid.NewGuid(),
+                    Amount = currentVehicle.Price,
+                    CreatedDate = DateTime.UtcNow,
+                    Buyer = buyer,
+                    BuyerID = buyer.CustomerID,
+                    Vehicle = currentVehicle,
+                    VehicleID = currentVehicle.VehicleID,
+                    SellerCustomer = currentVehicle.Seller,
+                    SellerCustomerID = currentVehicle.SellerID,
+                    SellerManufacturer = null,
+                    SellerManufacturerID = null
+                };
+                
+                // Update vehicle state
+                currentVehicle.BuyerID = buyer.CustomerID;
+                currentVehicle.Buyer = buyer;
+                currentVehicle.Status = "Sold";
+                currentVehicle.Transaction = transaction;
+
+                _db.Transactions.Add(transaction);
+                _db.Vehicles.Update(currentVehicle);
+
+                await _db.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                return new SettersResponse { status = 1, msg = "Purchase completed successfully." };
+            }
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                return new SettersResponse { status = 0, msg = $"Purchase failed: {ex.Message}" };
+            }
+        }
+        public async Task<SettersResponse> SellVehicle(Guid sellerID, Guid vehicleID)
+        {
+            if (sellerID == Guid.Empty || vehicleID == Guid.Empty)
+                return new SettersResponse { status = 0, msg = "Invalid identifiers." };
+
+            var seller = await _db.Customers.FindAsync(sellerID);
+            if (seller == null)
+                return new SettersResponse { status = 0, msg = "Seller not found." };
+
+            var vehicle = await _db.Vehicles.FirstOrDefaultAsync(v => v.VehicleID == vehicleID);
+            if (vehicle == null)
+                return new SettersResponse { status = 0, msg = "Vehicle not found." };
+
+            if (vehicle.BuyerID != null)
+                return new SettersResponse { status = 0, msg = "Vehicle already sold; cannot list." };
+
+            // If already listed by same seller, nothing to change
+            if (vehicle.SellerID == sellerID && vehicle.Status == "Available")
+                return new SettersResponse { status = 0, msg = "Vehicle is already listed by this seller." };
+
+            // Assign seller and mark as available
+            vehicle.SellerID = seller.CustomerID;
+            vehicle.Seller = seller;
+            vehicle.Status = "Available";
+            vehicle.Transaction = null;
+            //Checking if the car being sold was brought by the seller
+            if (seller.VehiclesBought.Any(v=>v.VehicleID == vehicle.VehicleID))
+                seller.VehiclesBought.Remove(vehicle);
+
+            _db.Customers.Update(seller);
+            _db.Vehicles.Update(vehicle);
+            await _db.SaveChangesAsync();
+
+            return new SettersResponse { status = 1, msg = "Vehicle listed for sale successfully." };
+        }
 
         //-----------------------------------------------------------------------
 
@@ -162,6 +272,48 @@ namespace Kawerk.Application.Services
         //-----------------------------------------------------------------------
 
         //        *********** Getters ***********
+        public async Task<List<Infastructure.DTOs.Vehicle.VehicleViewDTO>?> GetBoughtVehicles(Guid customerID)
+        {
+            var vehicles = await (from v in _db.Vehicles
+                                  where v.BuyerID == customerID
+                                  select new Infastructure.DTOs.Vehicle.VehicleViewDTO
+                                  {
+                                      SellerID = v.SellerID,
+                                      VehicleID = v.VehicleID,
+                                      Name = v.Name,
+                                      Description = v.Description,
+                                      Price = v.Price,
+                                      Type = v.Type,
+                                      EngineCapacity = v.EngineCapacity,
+                                      FuelType = v.FuelType,
+                                      Images = v.Images,
+                                      SeatingCapacity = v.SeatingCapacity,
+                                      Status = v.Status,
+                                      Transmission = v.Transmission,
+                                      Year = v.Year
+                                  }).ToListAsync();
+            return vehicles;
+        }
+        public async Task<List<Infastructure.DTOs.Vehicle.VehicleViewDTO>?> GetSoldVehicles(Guid customerID)
+        {
+            var vehicles = await (from v in _db.Vehicles
+                                  where v.SellerID == customerID
+                                  select new Infastructure.DTOs.Vehicle.VehicleViewDTO
+                                  {
+                                      SellerID = v.SellerID,
+                                      VehicleID = v.VehicleID,
+                                      Name = v.Name,
+                                      Description = v.Description,
+                                      Price = v.Price,
+                                      Type = v.Type,
+                                      EngineCapacity = v.EngineCapacity,
+                                      FuelType = v.FuelType,
+                                      Images = v.Images,
+                                      SeatingCapacity = v.SeatingCapacity,
+                                      Status = v.Status,
+                                  }).ToListAsync();
+            return vehicles;
+        }
         public async Task<CustomerViewDTO?> GetCustomer(Guid customerID)
         {
             //Getting customer from Database and projecting to CustomerDTO

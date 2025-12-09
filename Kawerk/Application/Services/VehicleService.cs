@@ -17,7 +17,7 @@ namespace Kawerk.Application.Services
 
         //
         //        *********** Setters ***********
-        public async Task<SettersResponse> CreateVehicle(VehicleDTO vehicle)//0 == Faulty DTO || 1 == Successful
+        public async Task<SettersResponse> CreateVehicle(Infastructure.DTOs.Vehicle.VehicleViewDTO vehicle)//0 == Faulty DTO || 1 == Successful
         {
             if (vehicle == null)
                 return new SettersResponse { status = 0, msg = "Faulty DTO" };
@@ -42,7 +42,7 @@ namespace Kawerk.Application.Services
             await _db.SaveChangesAsync();
             return new SettersResponse { status = 1, msg = "Vehicle created successfully" };
         }
-        public async Task<SettersResponse> UpdateVehicle(Guid vehicleID,VehicleDTO vehicle)//0 == Faulty DTO || 1 == Vehicle not found || 2 == Successful
+        public async Task<SettersResponse> UpdateVehicle(Guid vehicleID, Infastructure.DTOs.Vehicle.VehicleViewDTO vehicle)//0 == Faulty DTO || 1 == Vehicle not found || 2 == Successful
         {
             //Checking DTO validity
             if (vehicle == null)
@@ -113,7 +113,7 @@ namespace Kawerk.Application.Services
         //--------------------------------------------
 
         //        *********** Getters ***********
-        public async Task<VehicleDTO?> GetVehicle(Guid vehicleID)
+        public async Task<Infastructure.DTOs.Vehicle.VehicleViewDTO?> GetVehicle(Guid vehicleID)
         {
             //Checking ID validity
             if (vehicleID == Guid.Empty)
@@ -122,7 +122,7 @@ namespace Kawerk.Application.Services
             //Getting the vehicle from the Database
             var isVehicleExists = await(from v in _db.Vehicles
                                         where v.VehicleID == vehicleID
-                                        select new VehicleDTO
+                                        select new Infastructure.DTOs.Vehicle.VehicleViewDTO
                                         {
                                             VehicleID = v.VehicleID,
                                             Name = v.Name,
@@ -139,11 +139,11 @@ namespace Kawerk.Application.Services
             //Returning the result
             return isVehicleExists;
         }
-        public async Task<List<VehicleDTO>?> GetVehicles()
+        public async Task<List<Infastructure.DTOs.Vehicle.VehicleViewDTO>?> GetVehicles()
         {
             //Getting vehicles from the Database
             var vehicleQuery = await(from v in _db.Vehicles
-                                     select new VehicleDTO
+                                     select new Infastructure.DTOs.Vehicle.VehicleViewDTO
                                      {
                                          VehicleID = v.VehicleID,
                                          Name = v.Name,

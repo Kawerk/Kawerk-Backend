@@ -5,10 +5,10 @@ namespace Kawerk.Application.Interfaces
 {
     public interface IVehicleService
     {
-        public Task<SettersResponse> CreateVehicle(VehicleDTO vehicle);
-        public Task<SettersResponse> UpdateVehicle(Guid vehicleID,VehicleDTO vehicle);
+        public Task<SettersResponse> CreateVehicle(Infastructure.DTOs.Vehicle.VehicleViewDTO vehicle);
+        public Task<SettersResponse> UpdateVehicle(Guid vehicleID, Infastructure.DTOs.Vehicle.VehicleViewDTO vehicle);
         public Task<SettersResponse> DeleteVehicle(Guid vehicleID);
-        public Task<VehicleDTO?> GetVehicle(Guid vehicleID);
-        public Task<List<VehicleDTO>?> GetVehicles();
+        public Task<Infastructure.DTOs.Vehicle.VehicleViewDTO?> GetVehicle(Guid vehicleID);
+        public Task<List<Infastructure.DTOs.Vehicle.VehicleViewDTO>?> GetVehicles();
     }
 }

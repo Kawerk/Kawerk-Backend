@@ -46,12 +46,42 @@ namespace Kawerk.API.Controllers
                 return Ok(new { message = result.msg });
 
         }
+        [HttpPost("BuyVehicle")]
+        public async Task<IActionResult> BuyVehicle([FromQuery] Guid customerID, Guid vehicleID)
+        {
+            var result = await _customerService.BuyVehicle(customerID, vehicleID);
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
+            else
+                return Ok(new { message = result.msg });
+        }
+        [HttpPost("SellVehicle")]
+        public async Task<IActionResult> SellVehicle([FromQuery] Guid customerID, Guid vehicleID)
+        {
+            var result = await _customerService.SellVehicle(customerID, vehicleID);
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
+            else
+                return Ok(new { message = result.msg });
+        }
 
         [HttpGet("GetUser")]
         public async Task<IActionResult> GetUser([FromQuery] Guid customerID)
         {
             var result = await _customerService.GetCustomer(customerID);
 
+            return Ok(result);
+        }
+        [HttpGet("GetBoughtVehicles")]
+        public async Task<IActionResult> GetUserVehicles([FromQuery] Guid customerID)
+        {
+            var result = await _customerService.GetBoughtVehicles(customerID);
+            return Ok(result);
+        }
+        [HttpGet("GetSoldVehicles")]
+        public async Task<IActionResult> GetSoldVehicles([FromQuery] Guid customerID)
+        {
+            var result = await _customerService.GetSoldVehicles(customerID);
             return Ok(result);
         }
         [HttpGet("GetUsers")]

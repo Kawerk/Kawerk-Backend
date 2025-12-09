@@ -1,10 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Kawerk.Infastructure.DTOs.Vehicle
+﻿namespace Kawerk.Infastructure.DTOs.Vehicle
 {
-    public class VehicleDTO
+    public class VehicleCreationAndEditDTO
     {
-        public Guid VehicleID { get; set; }
         public required string Name { get; set; }
         public string? Description { get; set; }
         public int Price { get; set; }

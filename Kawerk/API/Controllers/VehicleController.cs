@@ -13,7 +13,7 @@ namespace Kawerk.API.Controllers
         }
 
         [HttpPost("CreateVehicle")]
-        public async Task<IActionResult> CreateVehicle([FromBody]VehicleDTO vehicle)
+        public async Task<IActionResult> CreateVehicle([FromBody] Infastructure.DTOs.Vehicle.VehicleViewDTO vehicle)
         {
             var result = await _vehicleService.CreateVehicle(vehicle);
             if (result.status == 0)
@@ -22,7 +22,7 @@ namespace Kawerk.API.Controllers
                 return Ok(new { message = result.msg });
         }
         [HttpPut("UpdateVehicle")]
-        public async Task<IActionResult> UpdateVehicle([FromQuery]Guid vehicleID,[FromBody]VehicleDTO vehicle)
+        public async Task<IActionResult> UpdateVehicle([FromQuery]Guid vehicleID,[FromBody] Infastructure.DTOs.Vehicle.VehicleViewDTO vehicle)
         {
             var result = await _vehicleService.UpdateVehicle(vehicleID, vehicle);
 
