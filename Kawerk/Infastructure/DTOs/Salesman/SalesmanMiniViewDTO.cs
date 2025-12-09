@@ -1,10 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Kawerk.Infastructure.DTOs.Salesman
+﻿namespace Kawerk.Infastructure.DTOs.Salesman
 {
-    public class SalesmanViewDTO
+    public class SalesmanMiniViewDTO
     {
-        public Guid? BranchID { get; set; }
         public Guid SalesmanID { get; set; }
         public string? Name { get; set; }
         public string? Email { get; set; }

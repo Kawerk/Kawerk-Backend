@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kawerk.API.Controllers
 {
+    [Route("api/[controller]")]
     public class BranchController : Controller
     {
         private readonly IBranchSevice _branchService;
@@ -38,12 +39,39 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
+        [HttpPost("AddSalesmanToBranch")]
+        public async Task<IActionResult> AddSalesmanToBranch([FromQuery]Guid branchID, [FromQuery]Guid salesmanID)
+        {
+            var result = await _branchService.AddSalesman(branchID, salesmanID);
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
+            else
+                return Ok(new { message = result.msg });
+        }
+        [HttpDelete("RemoveSalesmanFromBranch")]
+        public async Task<IActionResult> RemoveSalesmanFromBranch([FromQuery]Guid branchID, [FromQuery]Guid salesmanID)
+        {
+            var result = await _branchService.RemoveSalesman(branchID, salesmanID);
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
+            else
+                return Ok(new { message = result.msg });
+        }
         [HttpGet("GetBranch")]
         public async Task<IActionResult> GetBranch([FromQuery]Guid branchID)
         {
             var result = await _branchService.GetBranch(branchID);
             if (result == null)
                 return BadRequest(new { message = "Branch not found" });
+            else
+                return Ok(result);
+        }
+        [HttpGet("GetBranchSalesmen")]
+        public async Task<IActionResult> GetBranchSalesmen([FromQuery] Guid branchID)
+        {
+            var result = await _branchService.GetBranchSalesmen(branchID);
+            if (result == null)
+                return BadRequest(new { message = "No salesmen in this branch" });
             else
                 return Ok(result);
         }

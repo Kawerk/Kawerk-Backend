@@ -47,7 +47,12 @@ namespace Kawerk.Infastructure.Context
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Manufacturer>();
-            modelBuilder.Entity<Branches>();
+            modelBuilder.Entity<Branches>()
+                .HasMany(b => b.Salesmen)
+                .WithOne(s => s.Branch)
+                .HasForeignKey(s => s.BranchID)
+                .OnDelete(DeleteBehavior.NoAction);
+
             modelBuilder.Entity<Salesman>();
 
             //Transaction Buyer Foreign Key

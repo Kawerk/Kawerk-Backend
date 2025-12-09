@@ -32,15 +32,6 @@ namespace Kawerk.Application.Services
             if(!await IsPasswordValid(salesman.Password))
                 return new SettersResponse { status = 0, msg = "Weak password" };
 
-            //Getting branch from Database
-            var isBranchExists = await (from b in _db.Branches
-                                        where b.BranchID == salesman.branchID
-                                        select b).FirstOrDefaultAsync();
-            //If branch not found return
-            if (isBranchExists == null)
-                return new SettersResponse { status = 0, msg = "Branch not found" };
-
-            //Making the new salesman
             Salesman newSalesman = new Salesman
             {
                 SalesmanID = Guid.NewGuid(),
@@ -48,7 +39,7 @@ namespace Kawerk.Application.Services
                 Email = salesman.Email,
                 Password = new PasswordHasher<Salesman>().HashPassword(null, salesman.Password),
                 CreatedAt = DateTime.UtcNow,
-                Branch = isBranchExists // The branch the salesman will be working in
+                Branch = null
             };
 
             //Saving to Database
@@ -155,6 +146,7 @@ namespace Kawerk.Application.Services
                                          where s.SalesmanID == salesmanID
                                          select new SalesmanViewDTO
                                          {
+                                             BranchID = s.BranchID,
                                              SalesmanID = salesmanID,
                                              Email = s.Email,
                                              Phone = s.Phone,
@@ -172,7 +164,9 @@ namespace Kawerk.Application.Services
             var salesmenQuery = await(from s in _db.Salesman
                                         select new SalesmanViewDTO
                                         {
+                                            BranchID = s.BranchID,
                                             SalesmanID = s.SalesmanID,
+                                            Name = s.Name,
                                             Email = s.Email,
                                             Phone = s.Phone,
                                             Address = s.Address,

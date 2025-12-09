@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kawerk.API.Controllers
 {
+    [Route("api/[controller]")]
     public class CustomerController : Controller
     {
         private readonly ICustomerService _customerService;

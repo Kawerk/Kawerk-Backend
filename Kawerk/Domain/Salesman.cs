@@ -23,6 +23,7 @@ namespace Kawerk.Domain
         public DateTime CreatedAt { get; set; }
 
         //Relationships
-        public required Branches Branch { get; set; }
+        public Branches? Branch { get; set; }
+        public Guid? BranchID { get; set; }
     }
 }
