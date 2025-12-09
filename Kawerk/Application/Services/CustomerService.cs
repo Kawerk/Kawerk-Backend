@@ -1,11 +1,11 @@
 ﻿using Kawerk.Application.Interfaces;
 using Kawerk.Domain;
-using Kawerk.Infastructure.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.ComponentModel.DataAnnotations;
 using Kawerk.Infastructure.Context;
+using Kawerk.Infastructure.DTOs.Customer;
 
 namespace Kawerk.Application.Services
 {
@@ -161,12 +161,12 @@ namespace Kawerk.Application.Services
         //-----------------------------------------------------------------------
 
         //        *********** Getters ***********
-        public async Task<CustomerDTO?> GetCustomer(Guid customerID)
+        public async Task<CustomerViewDTO?> GetCustomer(Guid customerID)
         {
             //Getting customer from Database and projecting to CustomerDTO
             var customer = await (from c in _db.Customers
                                   where c.CustomerID == customerID
-                                  select new CustomerDTO
+                                  select new CustomerViewDTO
                                   {
                                       CustomerID = customerID,
                                       Name = c.Name,
@@ -181,11 +181,11 @@ namespace Kawerk.Application.Services
             //Returning Customer
             return customer;
         }
-        public async Task<List<CustomerDTO>?> GetCustomers()
+        public async Task<List<CustomerViewDTO>?> GetCustomers()
         {
             //Getting customers from Database and projecting to CustomerDTO
             var customersQuery = await(from c in _db.Customers
-                                 select new CustomerDTO
+                                 select new CustomerViewDTO
                                  {
                                      CustomerID = c.CustomerID,
                                      Name = c.Name,

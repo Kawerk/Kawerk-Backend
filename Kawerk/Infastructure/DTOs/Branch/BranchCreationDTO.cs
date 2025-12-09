@@ -1,4 +1,4 @@
-﻿namespace Kawerk.Infastructure.DTOs
+﻿namespace Kawerk.Infastructure.DTOs.Branch
 {
     public class BranchCreationDTO
     {

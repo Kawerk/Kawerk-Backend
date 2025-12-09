@@ -1,4 +1,4 @@
-﻿using Kawerk.Infastructure.DTOs;
+﻿using Kawerk.Infastructure.DTOs.Vehicle;
 
 namespace Kawerk.Application.Interfaces
 {

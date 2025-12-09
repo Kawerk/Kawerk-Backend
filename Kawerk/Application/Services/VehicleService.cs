@@ -1,7 +1,7 @@
 ﻿using Kawerk.Application.Interfaces;
 using Kawerk.Domain;
 using Kawerk.Infastructure.Context;
-using Kawerk.Infastructure.DTOs;
+using Kawerk.Infastructure.DTOs.Vehicle;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kawerk.Application.Services

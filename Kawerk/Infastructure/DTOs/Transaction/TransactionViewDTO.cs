@@ -1,8 +1,8 @@
 ﻿using Kawerk.Domain;
 
-namespace Kawerk.Infastructure.DTOs
+namespace Kawerk.Infastructure.DTOs.Transaction
 {
-    public class TransactionDTO
+    public class TransactionViewDTO
     {
         public Guid TransactionID { get; set; }
         public int Amount { get; set; }

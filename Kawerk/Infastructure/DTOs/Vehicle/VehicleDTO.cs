@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kawerk.Infastructure.DTOs
+namespace Kawerk.Infastructure.DTOs.Vehicle
 {
     public class VehicleDTO
     {

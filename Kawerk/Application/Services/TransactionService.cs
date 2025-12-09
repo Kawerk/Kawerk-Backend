@@ -1,7 +1,7 @@
 ﻿using Kawerk.Application.Interfaces;
 using Kawerk.Domain;
 using Kawerk.Infastructure.Context;
-using Kawerk.Infastructure.DTOs;
+using Kawerk.Infastructure.DTOs.Transaction;
 using Microsoft.EntityFrameworkCore;
 using System.Transactions;
 
@@ -104,12 +104,12 @@ namespace Kawerk.Application.Services
             return 2;
         }
 
-        public Task<TransactionDTO> GetTransaction(Guid transactionID)
+        public Task<TransactionViewDTO> GetTransaction(Guid transactionID)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<TransactionDTO>> GetTransactions()
+        public Task<List<TransactionViewDTO>> GetTransactions()
         {
             throw new NotImplementedException();
         }

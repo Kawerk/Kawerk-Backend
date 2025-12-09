@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kawerk.Infastructure.DTOs
+namespace Kawerk.Infastructure.DTOs.Branch
 {
-    public class BranchDTO
+    public class BranchViewDTO
     {
         public Guid BranchID { get; set; }
         public required string Name { get; set; }

@@ -1,7 +1,7 @@
 ﻿using Kawerk.Application.Interfaces;
 using Kawerk.Domain;
 using Kawerk.Infastructure.Context;
-using Kawerk.Infastructure.DTOs;
+using Kawerk.Infastructure.DTOs.Branch;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -130,7 +130,7 @@ namespace Kawerk.Application.Services
 
         //        *********** Getters ***********
 
-        public async Task<BranchDTO?> GetBranch(Guid branchID)
+        public async Task<BranchViewDTO?> GetBranch(Guid branchID)
         {
             //Checking ID validity
             if (branchID == Guid.Empty)
@@ -139,7 +139,7 @@ namespace Kawerk.Application.Services
             //Getting branch from Database and projecting to BranchDTO 
             var isBranchExisting = await (from b in _db.Branches
                                           where b.BranchID == branchID
-                                          select new BranchDTO
+                                          select new BranchViewDTO
                                           {
                                               BranchID = b.BranchID,
                                               Name = b.Name,
@@ -150,11 +150,11 @@ namespace Kawerk.Application.Services
             //returning result
             return isBranchExisting;
         }
-        public async Task<List<BranchDTO>?> GetBranches()
+        public async Task<List<BranchViewDTO>?> GetBranches()
         {
             //Getting branches from Database and projecting to BranchDTO
             var branchQuery = await(from b in _db.Branches
-                                         select new BranchDTO
+                                         select new BranchViewDTO
                                          {
                                              BranchID = b.BranchID,
                                              Name = b.Name,

@@ -1,7 +1,7 @@
 ﻿using Kawerk.Application.Interfaces;
 using Kawerk.Domain;
 using Kawerk.Infastructure.Context;
-using Kawerk.Infastructure.DTOs;
+using Kawerk.Infastructure.DTOs.Manufacturer;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kawerk.Application.Services
@@ -112,7 +112,7 @@ namespace Kawerk.Application.Services
         //--------------------------------------------
 
         //        *********** Getters ***********
-        public async Task<ManufacturerDTO?> GetManufacturer(Guid manufacturerID)
+        public async Task<ManufacturerViewDTO?> GetManufacturer(Guid manufacturerID)
         {
             //Checcking ID validity
             if (manufacturerID == Guid.Empty)
@@ -121,7 +121,7 @@ namespace Kawerk.Application.Services
             //Getting manufacturer from Database
             var isManufacturerExists = await (from m in  _db.Manufacturers
                                               where m.ManufacturerID == manufacturerID
-                                              select new ManufacturerDTO
+                                              select new ManufacturerViewDTO
                                               {
                                                   ManufacturerID = manufacturerID,
                                                   Name = m.Name,
@@ -132,11 +132,11 @@ namespace Kawerk.Application.Services
             //Returning the result
             return isManufacturerExists;
         }
-        public async Task<List<ManufacturerDTO>?> GetManufacturers()
+        public async Task<List<ManufacturerViewDTO>?> GetManufacturers()
         {
             //Getting Manufacturer from Database
             var manufacturerQuery = await (from m in _db.Manufacturers
-                                           select new ManufacturerDTO
+                                           select new ManufacturerViewDTO
                                            {
                                                ManufacturerID = m.ManufacturerID,
                                                Name = m.Name,

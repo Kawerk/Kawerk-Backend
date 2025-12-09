@@ -1,6 +1,6 @@
 ﻿using Kawerk.Domain;
 
-namespace Kawerk.Infastructure.DTOs
+namespace Kawerk.Infastructure.DTOs.Transaction
 {
     public class TransactionCreationDTO
     {

@@ -1,4 +1,4 @@
-﻿using Kawerk.Infastructure.DTOs;
+﻿using Kawerk.Infastructure.DTOs.Salesman;
 
 namespace Kawerk.Application.Interfaces
 {
@@ -7,7 +7,7 @@ namespace Kawerk.Application.Interfaces
         public Task<int> CreateSalesman(SalesmanCreationDTO salesman);
         public Task<int> UpdateSalesman(Guid salesmanID,SalesmanUpdateDTO salesman);
         public Task<int> DeleteSalesman(Guid salesmanID);
-        public Task<SalesmanDTO> GetSalesman(Guid salesmanID);
-        public Task<List<SalesmanDTO>> GetSalesmen();
+        public Task<SalesmanViewDTO> GetSalesman(Guid salesmanID);
+        public Task<List<SalesmanViewDTO>> GetSalesmen();
     }
 }

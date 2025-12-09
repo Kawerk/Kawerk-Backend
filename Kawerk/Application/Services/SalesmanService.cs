@@ -1,7 +1,7 @@
 ﻿using Kawerk.Application.Interfaces;
 using Kawerk.Domain;
 using Kawerk.Infastructure.Context;
-using Kawerk.Infastructure.DTOs;
+using Kawerk.Infastructure.DTOs.Salesman;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
@@ -145,14 +145,14 @@ namespace Kawerk.Application.Services
         //-----------------------------------------------------------------------
 
         //        *********** Getters ***********
-        public async Task<SalesmanDTO?> GetSalesman(Guid salesmanID)
+        public async Task<SalesmanViewDTO?> GetSalesman(Guid salesmanID)
         {
             if (salesmanID == Guid.Empty)
                 return null;
 
             var isSalesmanExist = await (from s in _db.Salesman
                                          where s.SalesmanID == salesmanID
-                                         select new SalesmanDTO
+                                         select new SalesmanViewDTO
                                          {
                                              SalesmanID = salesmanID,
                                              Email = s.Email,
@@ -166,10 +166,10 @@ namespace Kawerk.Application.Services
             return isSalesmanExist;
         }
 
-        public async Task<List<SalesmanDTO>> GetSalesmen()
+        public async Task<List<SalesmanViewDTO>> GetSalesmen()
         {
             var salesmenQuery = await(from s in _db.Salesman
-                                        select new SalesmanDTO
+                                        select new SalesmanViewDTO
                                         {
                                             SalesmanID = s.SalesmanID,
                                             Email = s.Email,

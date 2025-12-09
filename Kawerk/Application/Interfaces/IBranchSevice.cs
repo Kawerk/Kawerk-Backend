@@ -1,4 +1,4 @@
-﻿using Kawerk.Infastructure.DTOs;
+﻿using Kawerk.Infastructure.DTOs.Branch;
 
 namespace Kawerk.Application.Interfaces
 {
@@ -7,7 +7,7 @@ namespace Kawerk.Application.Interfaces
         public Task<int> CreateBranch(BranchCreationDTO branch);
         public Task<int> UpdateBranch(Guid branchID,BranchUpdateDTO branch);
         public Task<int> DeleteBranch(Guid branchID);
-        public Task<BranchDTO?> GetBranch(Guid branchID);
-        public Task<List<BranchDTO>?> GetBranches();
+        public Task<BranchViewDTO?> GetBranch(Guid branchID);
+        public Task<List<BranchViewDTO>?> GetBranches();
     }
 }

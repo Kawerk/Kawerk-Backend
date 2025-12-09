@@ -1,4 +1,4 @@
-﻿using Kawerk.Infastructure.DTOs;
+﻿using Kawerk.Infastructure.DTOs.Transaction;
 
 namespace Kawerk.Application.Interfaces
 {
@@ -6,8 +6,8 @@ namespace Kawerk.Application.Interfaces
     {
         public Task<int> CreateTransaction(TransactionCreationDTO transaction);
         public Task<int> DeleteTransaction(Guid transactionID);
-        public Task<TransactionDTO> GetTransaction(Guid transactionID);
-        public Task<List<TransactionDTO>> GetTransactions();
+        public Task<TransactionViewDTO> GetTransaction(Guid transactionID);
+        public Task<List<TransactionViewDTO>> GetTransactions();
 
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Kawerk.Application.Interfaces;
-using Kawerk.Infastructure.DTOs;
+using Kawerk.Infastructure.DTOs.Salesman;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kawerk.API.Controllers
