@@ -2,6 +2,7 @@
 using Kawerk.Domain;
 using Kawerk.Infastructure.Context;
 using Kawerk.Infastructure.DTOs.Manufacturer;
+using Kawerk.Infastructure.DTOs.Vehicle;
 using Kawerk.Infastructure.ResponseClasses;
 using Microsoft.EntityFrameworkCore;
 
@@ -99,6 +100,41 @@ namespace Kawerk.Application.Services
             await _db.SaveChangesAsync();
             return new SettersResponse { status = 1, msg = "Manufacturer deleted successfully" };   
         }
+        public async Task<SettersResponse> SellVehicle(Guid manufacturerID, Guid vehicleID)//0 == Faulty IDs || 1 == Manufacturer not found || 2 == Vehicle not found || 3 == Vehicle already sold by this manufacturer || 4 == Successfull
+        {
+            //Checking ID validity
+            if (manufacturerID == Guid.Empty || vehicleID == Guid.Empty)
+                return new SettersResponse { status = 0, msg = "Faulty IDs" };
+            //Getting Manufacturer from Database
+            var isManufacturerExists = await (from m in _db.Manufacturers
+                                              where m.ManufacturerID == manufacturerID
+                                              select m).FirstOrDefaultAsync();
+            //If Manufacturer not found return
+            if (isManufacturerExists == null)
+                return new SettersResponse { status = 0, msg = "Manufacturer not found" };
+            
+            //Getting Vehicle from Database
+            var isVehicleExists = await (from v in _db.Vehicles
+                                         where v.VehicleID == vehicleID
+                                         select v).FirstOrDefaultAsync();
+            //If Vehicle not found return
+            if (isVehicleExists == null)
+                return new SettersResponse { status = 0, msg = "Vehicle not found" };
+
+            //Checking if Vehicle is already sold by this manufacturer
+            if (isVehicleExists.ManufacturerID == manufacturerID)
+                return new SettersResponse { status = 0, msg = "Vehicle already sold by this manufacturer" };
+
+            //Checking if Vehicle is already being sold
+            if (isVehicleExists.SellerID != null || isVehicleExists.BuyerID != null)
+                return new SettersResponse { status = 0, msg = "Vehicle is already being sold" };
+
+            //Selling Vehicle
+            isVehicleExists.ManufacturerID = manufacturerID;
+            _db.Vehicles.Update(isVehicleExists);
+            await _db.SaveChangesAsync();
+            return new SettersResponse { status = 1, msg = "Vehicle sold successfully" };
+        }
         //--------------------------------------------
 
         //        *********** Extra Validation Function ***********
@@ -131,6 +167,31 @@ namespace Kawerk.Application.Services
 
             //Returning the result
             return isManufacturerExists;
+        }
+        public async Task<VehicleManufacturerViewDTO?> GetSoldVehicles(Guid manufacturerID)
+        {
+            //Checcking ID validity
+            if (manufacturerID == Guid.Empty)
+                return null;
+            //Getting Vehicle from Database
+            var isVehicleExists = await (from v in _db.Vehicles
+                                         where v.ManufacturerID == manufacturerID
+                                         select new VehicleManufacturerViewDTO
+                                         {
+                                             ManufacturerID = v.ManufacturerID,
+                                             VehicleID = v.VehicleID,
+                                             Name = v.Name,
+                                             Description = v.Description,
+                                             Price = v.Price,
+                                             Type = v.Type,
+                                             EngineCapacity = v.EngineCapacity,
+                                             FuelType = v.FuelType,
+                                             Images = v.Images,
+                                             SeatingCapacity = v.SeatingCapacity,
+                                             Status = v.Status,
+                                         }).FirstOrDefaultAsync();
+            //Returning the result
+            return isVehicleExists;
         }
         public async Task<List<ManufacturerViewDTO>?> GetManufacturers()
         {

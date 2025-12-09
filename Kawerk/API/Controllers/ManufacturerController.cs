@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kawerk.API.Controllers
 {
+    [Route("api/[controller]")]
     public class ManufacturerController : Controller
     {
         private readonly IManufacturerService _manufacturerService;
@@ -39,11 +40,29 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
+        [HttpPost("SellVehicle")]
+        public async Task<IActionResult> SellVehicle([FromQuery] Guid manufacturerID,Guid vehicleID)
+        {
+            var result = await _manufacturerService.SellVehicle(manufacturerID, vehicleID);
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
+            else
+                return Ok(new { message = result.msg });
+        }
         [HttpGet("GetManufacturer")]
         public async Task<IActionResult> GetManufacturer([FromQuery] Guid manufacturerID)
         {
             var result = await _manufacturerService.GetManufacturer(manufacturerID);
 
+            if (result == null)
+                return NotFound(new { message = "not found" });
+            else
+                return Ok(result);
+        }
+        [HttpGet("GetSoldVehicles")]
+        public async Task<IActionResult> GetSoldVehicles([FromQuery] Guid manufacturerID)
+        {
+            var result = await _manufacturerService.GetSoldVehicles(manufacturerID);
             if (result == null)
                 return NotFound(new { message = "not found" });
             else

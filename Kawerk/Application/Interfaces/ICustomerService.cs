@@ -12,8 +12,8 @@ namespace Kawerk.Application.Interfaces
         public Task<SettersResponse> BuyVehicle(Guid customerID, Guid vehicleID);
         public Task<SettersResponse> SellVehicle(Guid sellerID, Guid vehicleID);
         public Task<CustomerViewDTO?> GetCustomer(Guid customerID);
-        public Task<List<Kawerk.Infastructure.DTOs.Vehicle.VehicleViewDTO>?> GetBoughtVehicles(Guid customerID);
-        public Task<List<Kawerk.Infastructure.DTOs.Vehicle.VehicleViewDTO>?> GetSoldVehicles(Guid customerID);
+        public Task<List<VehicleViewDTO>?> GetBoughtVehicles(Guid customerID);
+        public Task<List<VehicleSellerViewDTO>?> GetSoldVehicles(Guid customerID);
         public Task<List<CustomerViewDTO>?> GetCustomers();
     }
 }

@@ -272,13 +272,12 @@ namespace Kawerk.Application.Services
         //-----------------------------------------------------------------------
 
         //        *********** Getters ***********
-        public async Task<List<Infastructure.DTOs.Vehicle.VehicleViewDTO>?> GetBoughtVehicles(Guid customerID)
+        public async Task<List<VehicleViewDTO>?> GetBoughtVehicles(Guid customerID)
         {
             var vehicles = await (from v in _db.Vehicles
                                   where v.BuyerID == customerID
-                                  select new Infastructure.DTOs.Vehicle.VehicleViewDTO
+                                  select new VehicleViewDTO
                                   {
-                                      SellerID = v.SellerID,
                                       VehicleID = v.VehicleID,
                                       Name = v.Name,
                                       Description = v.Description,
@@ -294,11 +293,11 @@ namespace Kawerk.Application.Services
                                   }).ToListAsync();
             return vehicles;
         }
-        public async Task<List<Infastructure.DTOs.Vehicle.VehicleViewDTO>?> GetSoldVehicles(Guid customerID)
+        public async Task<List<VehicleSellerViewDTO>?> GetSoldVehicles(Guid customerID)
         {
             var vehicles = await (from v in _db.Vehicles
                                   where v.SellerID == customerID
-                                  select new Infastructure.DTOs.Vehicle.VehicleViewDTO
+                                  select new VehicleSellerViewDTO
                                   {
                                       SellerID = v.SellerID,
                                       VehicleID = v.VehicleID,
