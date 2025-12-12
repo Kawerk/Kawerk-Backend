@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kawerk.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/manufacturer")]
     public class ManufacturerController : Controller
     {
         private readonly IManufacturerService _manufacturerService;
@@ -12,7 +12,7 @@ namespace Kawerk.API.Controllers
         {
             _manufacturerService = manufacturerService;
         }
-        [HttpPost("CreateManufacturer")]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateManufacturer([FromBody] ManufacturerCreationDTO manufacturer)
         {
             var result = await _manufacturerService.CreateManufacturer(manufacturer);
@@ -21,17 +21,17 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpPut("UpdateManufacturer")]
-        public async Task<IActionResult> UpdateManufacturer([FromQuery]Guid manufacturerGuid, [FromBody] ManufacturerUpdateDTO manufacturer)
+        [HttpPut("update/{manufacturerID}")]
+        public async Task<IActionResult> UpdateManufacturer([FromRoute]Guid manufacturerID, [FromBody] ManufacturerUpdateDTO manufacturer)
         {
-            var result = await _manufacturerService.UpdateManufacturer(manufacturerGuid, manufacturer);
+            var result = await _manufacturerService.UpdateManufacturer(manufacturerID, manufacturer);
             if (result.status == 0)
                 return BadRequest(new { message = result.msg });
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpDelete("DeleteManufacturer")]
-        public async Task<IActionResult> DeleteManufacturer([FromQuery]Guid manufacturerID)
+        [HttpDelete("delete/{manufacturerID}")]
+        public async Task<IActionResult> DeleteManufacturer([FromRoute]Guid manufacturerID)
         {
             var result = await _manufacturerService.DeleteManufacturer(manufacturerID);
 
@@ -40,8 +40,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpPost("SellVehicle")]
-        public async Task<IActionResult> SellVehicle([FromQuery] Guid manufacturerID,Guid vehicleID)
+        [HttpPost("sell-vehicle/{manufacturerID}/{vehicleID}")]
+        public async Task<IActionResult> SellVehicle([FromRoute] Guid manufacturerID, [FromRoute] Guid vehicleID)
         {
             var result = await _manufacturerService.SellVehicle(manufacturerID, vehicleID);
             if (result.status == 0)
@@ -49,8 +49,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpGet("GetManufacturer")]
-        public async Task<IActionResult> GetManufacturer([FromQuery] Guid manufacturerID)
+        [HttpGet("get/{manufacturerID}")]
+        public async Task<IActionResult> GetManufacturer([FromRoute] Guid manufacturerID)
         {
             var result = await _manufacturerService.GetManufacturer(manufacturerID);
 
@@ -59,8 +59,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(result);
         }
-        [HttpGet("GetSoldVehicles")]
-        public async Task<IActionResult> GetSoldVehicles([FromQuery] Guid manufacturerID)
+        [HttpGet("get-sold-vehicles/{manufacturerID}")]
+        public async Task<IActionResult> GetSoldVehicles([FromRoute] Guid manufacturerID)
         {
             var result = await _manufacturerService.GetSoldVehicles(manufacturerID);
             if (result == null)
@@ -68,7 +68,7 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(result);
         }
-        [HttpGet("GetManufacturers")]
+        [HttpGet("get")]
         public async Task<IActionResult> GetManufacturers()
         {
             var result = await _manufacturerService.GetManufacturers();

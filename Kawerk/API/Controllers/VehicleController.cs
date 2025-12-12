@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kawerk.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/vehicle")]
     public class VehicleController : Controller
     {
         private readonly IVehicleService _vehicleService;
@@ -13,8 +13,8 @@ namespace Kawerk.API.Controllers
             _vehicleService = vehicleService;
         }
 
-        [HttpPost("CreateVehicle")]
-        public async Task<IActionResult> CreateVehicle([FromBody] Infastructure.DTOs.Vehicle.VehicleViewDTO vehicle)
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateVehicle([FromBody] VehicleViewDTO vehicle)
         {
             var result = await _vehicleService.CreateVehicle(vehicle);
             if (result.status == 0)
@@ -22,8 +22,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpPut("UpdateVehicle")]
-        public async Task<IActionResult> UpdateVehicle([FromQuery]Guid vehicleID,[FromBody] Infastructure.DTOs.Vehicle.VehicleViewDTO vehicle)
+        [HttpPut("update/{vehicleID}")]
+        public async Task<IActionResult> UpdateVehicle([FromRoute] Guid vehicleID, [FromBody] VehicleViewDTO vehicle)
         {
             var result = await _vehicleService.UpdateVehicle(vehicleID, vehicle);
 
@@ -32,8 +32,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpDelete("DeleteVehicle")]
-        public async Task<IActionResult> DeleteVehicle([FromQuery] Guid vehicleID)
+        [HttpDelete("delete/{vehicleID}")]
+        public async Task<IActionResult> DeleteVehicle([FromRoute] Guid vehicleID)
         {
             var result = await _vehicleService.DeleteVehicle(vehicleID);
 
@@ -42,14 +42,14 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpGet("GetVehicle")]
-        public async Task<IActionResult> GetVehicle([FromQuery] Guid vehicleID)
+        [HttpGet("get/{vehicleID}")]
+        public async Task<IActionResult> GetVehicle([FromRoute] Guid vehicleID)
         {
             var result = await _vehicleService.GetVehicle(vehicleID);
 
             return Ok(result);
         }
-        [HttpGet("GetVehicles")]
+        [HttpGet("get")]
         public async Task<IActionResult> GetVehicles()
         {
             var result = await _vehicleService.GetVehicles();

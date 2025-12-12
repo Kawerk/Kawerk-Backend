@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kawerk.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/customer")]
     public class CustomerController : Controller
     {
         private readonly ICustomerService _customerService;
@@ -13,7 +13,7 @@ namespace Kawerk.API.Controllers
             _customerService = customerService;
         }
 
-        [HttpPost("CreateCustomer")]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateCustomer([FromBody] CustomerCreationDTO customer)
         {
             var result = await _customerService.CreateCustomer(customer);
@@ -24,8 +24,8 @@ namespace Kawerk.API.Controllers
                 return Ok(new { message = result.msg });
         }
 
-        [HttpPut("UpdateCustomer")]
-        public async Task<IActionResult> UpdateCustomer([FromQuery] Guid customerID, [FromBody] CustomerUpdateDTO customer)
+        [HttpPut("update/{customerID}")]
+        public async Task<IActionResult> UpdateCustomer([FromRoute] Guid customerID, [FromBody] CustomerUpdateDTO customer)
         {
             var result = await _customerService.UpdateCustomer(customerID, customer);
 
@@ -36,8 +36,8 @@ namespace Kawerk.API.Controllers
 
         }
 
-        [HttpDelete("DeleteCustomer")]
-        public async Task<IActionResult> DeleteCustomer([FromQuery] Guid customerID)
+        [HttpDelete("delete/{customerID}")]
+        public async Task<IActionResult> DeleteCustomer([FromRoute] Guid customerID)
         {
             var result = await _customerService.DeleteCustomer(customerID);
 
@@ -47,8 +47,9 @@ namespace Kawerk.API.Controllers
                 return Ok(new { message = result.msg });
 
         }
-        [HttpPost("BuyVehicle")]
-        public async Task<IActionResult> BuyVehicle([FromQuery] Guid customerID, Guid vehicleID)
+
+        [HttpPost("buy-vehicle/{customerID}/{vehicleID}")]
+        public async Task<IActionResult> BuyVehicle([FromRoute] Guid customerID, [FromRoute] Guid vehicleID)
         {
             var result = await _customerService.BuyVehicle(customerID, vehicleID);
             if (result.status == 0)
@@ -56,8 +57,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpPost("SellVehicle")]
-        public async Task<IActionResult> SellVehicle([FromQuery] Guid customerID, Guid vehicleID)
+        [HttpPost("sell-vehicle/{customerID}/{vehicleID}")]
+        public async Task<IActionResult> SellVehicle([FromRoute] Guid customerID, [FromRoute] Guid vehicleID)
         {
             var result = await _customerService.SellVehicle(customerID, vehicleID);
             if (result.status == 0)
@@ -66,26 +67,26 @@ namespace Kawerk.API.Controllers
                 return Ok(new { message = result.msg });
         }
 
-        [HttpGet("GetUser")]
-        public async Task<IActionResult> GetUser([FromQuery] Guid customerID)
+        [HttpGet("get/{customerID}")]
+        public async Task<IActionResult> GetUser([FromRoute] Guid customerID)
         {
             var result = await _customerService.GetCustomer(customerID);
 
             return Ok(result);
         }
-        [HttpGet("GetBoughtVehicles")]
-        public async Task<IActionResult> GetUserVehicles([FromQuery] Guid customerID)
+        [HttpGet("get-bought-vehicles/{customerID}")]
+        public async Task<IActionResult> GetUserVehicles([FromRoute] Guid customerID)
         {
             var result = await _customerService.GetBoughtVehicles(customerID);
             return Ok(result);
         }
-        [HttpGet("GetSoldVehicles")]
-        public async Task<IActionResult> GetSoldVehicles([FromQuery] Guid customerID)
+        [HttpGet("get-sold-vehicles/{customerID}")]
+        public async Task<IActionResult> GetSoldVehicles([FromRoute] Guid customerID)
         {
             var result = await _customerService.GetSoldVehicles(customerID);
             return Ok(result);
         }
-        [HttpGet("GetUsers")]
+        [HttpGet("get")]
         public async Task<IActionResult> GetUsers()
         {
             var result = await _customerService.GetCustomers();

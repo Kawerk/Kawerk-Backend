@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kawerk.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/branch")]
     public class BranchController : Controller
     {
         private readonly IBranchSevice _branchService;
@@ -12,7 +12,7 @@ namespace Kawerk.API.Controllers
         {
             _branchService = branchService;
         }
-        [HttpPost("CreateBranch")]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateBranch([FromBody]BranchCreationDTO branch)
         {
             var result = await _branchService.CreateBranch(branch);
@@ -21,8 +21,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpPut("UpdateBranch")]
-        public async Task<IActionResult> UpdateBranch([FromQuery]Guid branchID,[FromBody] BranchUpdateDTO branch)
+        [HttpPut("update/{branchID}")]
+        public async Task<IActionResult> UpdateBranch([FromRoute]Guid branchID,[FromBody] BranchUpdateDTO branch)
         {
             var result = await _branchService.UpdateBranch(branchID, branch);
             if (result.status == 0)
@@ -30,8 +30,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpDelete("DeleteBranch")]
-        public async Task<IActionResult> DeleteBranch([FromQuery]Guid branchID)
+        [HttpDelete("delete/{branchID}")]
+        public async Task<IActionResult> DeleteBranch([FromRoute]Guid branchID)
         {
             var result = await  _branchService.DeleteBranch(branchID);
             if (result.status == 0)
@@ -39,8 +39,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpPost("AddSalesmanToBranch")]
-        public async Task<IActionResult> AddSalesmanToBranch([FromQuery]Guid branchID, [FromQuery]Guid salesmanID)
+        [HttpPost("add-salesman/{branchID}/{salesmanID}")]
+        public async Task<IActionResult> AddSalesmanToBranch([FromRoute]Guid branchID, [FromRoute]Guid salesmanID)
         {
             var result = await _branchService.AddSalesman(branchID, salesmanID);
             if (result.status == 0)
@@ -48,8 +48,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpDelete("RemoveSalesmanFromBranch")]
-        public async Task<IActionResult> RemoveSalesmanFromBranch([FromQuery]Guid branchID, [FromQuery]Guid salesmanID)
+        [HttpDelete("remove-salesman/{branchID}/{salesmanID}")]
+        public async Task<IActionResult> RemoveSalesmanFromBranch([FromRoute]Guid branchID, [FromRoute]Guid salesmanID)
         {
             var result = await _branchService.RemoveSalesman(branchID, salesmanID);
             if (result.status == 0)
@@ -57,8 +57,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpGet("GetBranch")]
-        public async Task<IActionResult> GetBranch([FromQuery]Guid branchID)
+        [HttpGet("get/{branchID}")]
+        public async Task<IActionResult> GetBranch([FromRoute]Guid branchID)
         {
             var result = await _branchService.GetBranch(branchID);
             if (result == null)
@@ -66,8 +66,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(result);
         }
-        [HttpGet("GetBranchSalesmen")]
-        public async Task<IActionResult> GetBranchSalesmen([FromQuery] Guid branchID)
+        [HttpGet("get-salesmen/{branchID}")]
+        public async Task<IActionResult> GetBranchSalesmen([FromRoute] Guid branchID)
         {
             var result = await _branchService.GetBranchSalesmen(branchID);
             if (result == null)
@@ -75,7 +75,7 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(result);
         }
-        [HttpGet("GetBrances")]
+        [HttpGet("get")]
         public async Task<IActionResult> GetBranches()
         {
             var result = await _branchService.GetBranches();

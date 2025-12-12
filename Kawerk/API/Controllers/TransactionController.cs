@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kawerk.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/vi/transaction")]
     public class TransactionController : Controller
     {
         private readonly ITransactionService _transactionService;
@@ -13,7 +13,7 @@ namespace Kawerk.API.Controllers
             _transactionService = transactionService;
         }
         //        *********** Setters ***********
-        [HttpPost("CreateTransaction")]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateTransaction([FromBody] TransactionCreationDTO transaction)
         {
             var result = await _transactionService.CreateTransaction(transaction);
@@ -22,7 +22,7 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpDelete("DeleteTransaction/{transactionID}")]
+        [HttpDelete("delete/{transactionID}")]
         public async Task<IActionResult> DeleteTransaction([FromRoute] Guid transactionID)
         {
             var result = await _transactionService.DeleteTransaction(transactionID);
@@ -32,13 +32,13 @@ namespace Kawerk.API.Controllers
                 return Ok(new { message = result.msg });
         }
         //        *********** Getters ***********
-        [HttpGet("GetTransaction/{transactionID}")]
+        [HttpGet("get/{transactionID}")]
         public async Task<IActionResult> GetTransaction([FromRoute] Guid transactionID)
         {
             var result = await _transactionService.GetTransaction(transactionID);
             return Ok(result);
         }
-        [HttpGet("GetTransactions")]
+        [HttpGet("get")]
         public async Task<IActionResult> GetTransactions()
         {
             var result = await _transactionService.GetTransactions();

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kawerk.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/salesman")]
     public class SalesmanController : Controller
     {
         private readonly ISalesmanService _salesmanService;
@@ -12,7 +12,7 @@ namespace Kawerk.API.Controllers
         {
             _salesmanService = salesmanService;
         }
-        [HttpPost("CreateSalesman")]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateSalesman([FromBody] SalesmanCreationDTO salesman)
         {
             var result = await _salesmanService.CreateSalesman(salesman);
@@ -22,8 +22,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpPut("UpdateSalesman")]
-        public async Task<IActionResult> UpdateSalesman([FromQuery] Guid salesmanID, [FromBody] SalesmanUpdateDTO salesman)
+        [HttpPut("update/{salesmanID}")]
+        public async Task<IActionResult> UpdateSalesman([FromRoute] Guid salesmanID, [FromBody] SalesmanUpdateDTO salesman)
         {
             var result = await _salesmanService.UpdateSalesman(salesmanID, salesman);
             if (result.status == 0)
@@ -31,8 +31,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpDelete("DeleteSalesman")]
-        public async Task<IActionResult> DeleteSalesman([FromQuery] Guid salesmanID)
+        [HttpDelete("delete/{salesmanID}")]
+        public async Task<IActionResult> DeleteSalesman([FromRoute] Guid salesmanID)
         {
             var result = await _salesmanService.DeleteSalesman(salesmanID);
 
@@ -41,8 +41,8 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-        [HttpGet("GetSalesman")]
-        public async Task<IActionResult> GetSalesman([FromQuery]Guid salesmanID)
+        [HttpGet("get/{salesmanID}")]
+        public async Task<IActionResult> GetSalesman([FromRoute] Guid salesmanID)
         {
             var result = await _salesmanService.GetSalesman(salesmanID);
             if (result == null)
@@ -50,7 +50,7 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(result);
         }
-        [HttpGet("GetSalesmen")]
+        [HttpGet("get")]
         public async Task<IActionResult> GetSalesmen()
         {
             var result = await _salesmanService.GetSalesmen();
