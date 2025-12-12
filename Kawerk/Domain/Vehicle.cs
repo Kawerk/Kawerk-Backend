@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kawerk.Domain.Entities
+namespace Kawerk.Domain
 {
     public class Vehicle
     {
@@ -11,7 +11,7 @@ namespace Kawerk.Domain.Entities
         public required string Name { get; set; }
         [Column(TypeName ="varchar(2000)")]
         public string? Description { get; set; }
-        public int price { get; set; }
+        public int Price { get; set; }
         [Column(TypeName = "varchar(100)")]
         public string? Type { get; set; }
         [Column(TypeName = "varchar(100)")]
@@ -25,13 +25,17 @@ namespace Kawerk.Domain.Entities
         public string? FuelType { get; set; }
         [Column(TypeName = "varchar(50)")]
         public string? Status { get; set; }
+        public DateTime CreatedAt { get; set; }
         public List<string>? Images { get; set; }
-        public string ManufacturerName => Manufacturer.Name;
+        public string ManufacturerName => string.IsNullOrEmpty(Manufacturer.Name)? Seller.Name : Manufacturer.Name;
 
         //Relationships
-        [Required]
-        public required Manufacturer Manufacturer { get; set; }
-        public Customer? Customer { get; set; }
+        public Manufacturer? Manufacturer { get; set; }
+        public Guid? ManufacturerID { get; set; }
+        public Customer? Seller { get; set; }
+        public Guid? SellerID { get; set; }
+        public Customer? Buyer { get; set; }
+        public Guid? BuyerID {  get; set; }
         public Transaction? Transaction { get; set; }
     }
 }

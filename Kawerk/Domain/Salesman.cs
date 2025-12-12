@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kawerk.Domain.Entities
+namespace Kawerk.Domain
 {
     public class Salesman
     {
@@ -20,8 +20,10 @@ namespace Kawerk.Domain.Entities
         public string? City { get; set; }
         [Column(TypeName = "varchar(100)")]
         public string? Country { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         //Relationships
-        public required Branches Branch { get; set; }
+        public Branches? Branch { get; set; }
+        public Guid? BranchID { get; set; }
     }
 }

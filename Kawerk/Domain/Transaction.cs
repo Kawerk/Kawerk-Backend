@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Kawerk.Domain.Entities
+namespace Kawerk.Domain
 {
     public class Transaction
     {

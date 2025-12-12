@@ -1,24 +1,24 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kawerk.Domain.Entities
+namespace Kawerk.Domain
 {
-    public class Manufacturer
+    public class Branches
     {
         [Key]
-        public Guid ManufacturerID { get; set; }
-        [Column(TypeName = "varchar(100)")]
+        public Guid BranchID { get; set; }
+        [Column(TypeName ="nvarchar(100)")]
         public required string Name { get; set; }
+        [Column(TypeName = "varchar(500)")]
+        public string? Location { get; set; }
         [Column(TypeName = "varchar(2000)")]
         public string? Description { get; set; }
-        [Column(TypeName = "varchar(100)")]
-        public string? Type { get; set; } // Cars or motorcycles , etc
         [Column(TypeName = "varchar(200)")]
         public string? Warranty { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         //Relationships
+        public List<Salesman> Salesmen { get; set; } = new List<Salesman>();
         public List<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
-        public List<Transaction> Transactions { get; set; } = new List<Transaction>();
-
     }
 }

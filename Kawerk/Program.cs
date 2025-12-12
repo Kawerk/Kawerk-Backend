@@ -1,4 +1,6 @@
-using Kawerk;
+using Kawerk.Application.Interfaces;
+using Kawerk.Application.Services;
+using Kawerk.Infastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +12,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IManufacturerService, ManufacturerService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<IBranchSevice,BranchService>();
+builder.Services.AddScoped<ISalesmanService, SalesmanService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddDbContext<DbBase>(options =>
 {
     options.UseSqlServer("Data Source=DESKTOP-OR6CO4J\\SQLEXPRESS;Initial Catalog=Kawerk;Integrated Security=True;Trust Server Certificate=True");//depends on your server!!!

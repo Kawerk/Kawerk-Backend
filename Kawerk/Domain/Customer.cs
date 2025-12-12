@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kawerk.Domain.Entities
+namespace Kawerk.Domain
 {
     public class Customer
     {
@@ -23,11 +23,13 @@ namespace Kawerk.Domain.Entities
         public string? City { get; set; }
         [Column(TypeName = "varchar(100)")]
         public string? Country { get; set; }
+        public DateTime CreatedAt { get; set; }
         [Column(TypeName ="varchar(200)")]
         public string? ProfileUrl { get; set; }
 
         //Relationships
-        public List<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+        public List<Vehicle> VehiclesBought { get; set; } = new List<Vehicle>();
+        public List<Vehicle> VehiclesSold { get; set; } = new List<Vehicle>();
         public List<Transaction> Purchases { get; set; } = new List<Transaction>();
         public List<Transaction> Sells { get; set; } = new List<Transaction>();
 
