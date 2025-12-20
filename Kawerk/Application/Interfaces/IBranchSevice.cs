@@ -12,7 +12,7 @@ namespace Kawerk.Application.Interfaces
         public Task<SettersResponse> AddSalesman(Guid branchID,Guid salesmanID);
         public Task<SettersResponse> RemoveSalesman(Guid branchID,Guid salesmanID);
         public Task<BranchViewDTO?> GetBranch(Guid branchID);
-        public Task<List<SalesmanViewDTO>?> GetBranchSalesmen(Guid branchID);
-        public Task<List<BranchViewDTO>?> GetBranches();
+        public Task<PagedList<SalesmanViewDTO>?> GetBranchSalesmen(Guid branchID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize = 5);
+        public Task<PagedList<BranchViewDTO>?> GetBranches(int page,int pageSize);
     }
 }
