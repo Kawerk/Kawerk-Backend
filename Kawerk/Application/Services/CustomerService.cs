@@ -2,6 +2,8 @@
 using Kawerk.Domain;
 using Kawerk.Infastructure.Context;
 using Kawerk.Infastructure.DTOs.Customer;
+using Kawerk.Infastructure.DTOs.Manufacturer;
+using Kawerk.Infastructure.DTOs.Notification;
 using Kawerk.Infastructure.DTOs.Vehicle;
 using Kawerk.Infastructure.ResponseClasses;
 using Microsoft.AspNet.Identity;
@@ -235,7 +237,24 @@ namespace Kawerk.Application.Services
 
             return new SettersResponse { status = 1, msg = "Vehicle listed for sale successfully." };
         }
-
+        public async Task<SettersResponse> Subscribe(Guid customerID, Guid manufacturerID)
+        {
+            var isCustomerExists = await (from c in _db.Customers
+                                        where c.CustomerID == customerID
+                                        select c).FirstOrDefaultAsync();
+            if (isCustomerExists == null)
+                return new SettersResponse { status = 0, msg = "Customer does not exist" };
+            var isManufacturerExists = await (from m in _db.Manufacturers
+                                                where m.ManufacturerID == manufacturerID
+                                                select m).FirstOrDefaultAsync();
+            if (isManufacturerExists == null)
+                return new SettersResponse { status = 0, msg = "Manufacturer does not exist" };
+            //Subscription Logic
+            isManufacturerExists.Subscribers.Add(isCustomerExists);
+            _db.Manufacturers.Update(isManufacturerExists);
+            await _db.SaveChangesAsync();
+            return new SettersResponse { status = 1, msg = "Subscription successful" };
+        }
         //-----------------------------------------------------------------------
 
 
@@ -445,6 +464,43 @@ namespace Kawerk.Application.Services
 
             //Returning Customer
             return customer;
+        }
+        public async Task<PagedList<ManufacturerViewDTO>?> GetSubscribedManufacturers(Guid customerID, int page, int pageSize)
+        {
+            var isCustomerExists = await _db.Customers.AnyAsync(c => c.CustomerID == customerID);
+            if (!isCustomerExists) 
+                return null;
+
+            var manufacturersQuery = _db.Customers
+                                    .Where(c => c.CustomerID == customerID)
+                                    .SelectMany(c => c.SubscribedManufacturers) // keep this as an EF query
+                                    .Select(m => new ManufacturerViewDTO
+                                    {
+                                        ManufacturerID = m.ManufacturerID,
+                                        Name = m.Name,
+                                        Description = m.Description,
+                                        Type = m.Type
+                                    });
+
+            return await PagedList<ManufacturerViewDTO>.CreateAsync(manufacturersQuery, page, pageSize);
+        }
+        public async Task<PagedList<NotificationViewDTO>?> GetNotifications(Guid customerID, int page, int pageSize)
+        {
+            var isCustomerExists = await _db.Customers.AnyAsync(c => c.CustomerID == customerID);
+            if (!isCustomerExists) 
+                return null;
+
+            var notificationsQuery = _db.Notifications
+                                        .Where(n => n.CustomerID == customerID)
+                                        .Select(n => new NotificationViewDTO
+                                        {
+                                            NotificationID = n.NotificationId,
+                                            Title = n.Title,
+                                            Message = n.Message,
+                                            CreatedAt = n.CreatedAt
+                                        });
+
+            return await PagedList<NotificationViewDTO>.CreateAsync(notificationsQuery, page, pageSize);
         }
         public async Task<PagedList<CustomerViewDTO>?> GetCustomers(int page,int pageSize)
         {

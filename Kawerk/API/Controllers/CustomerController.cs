@@ -66,7 +66,15 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
-
+        [HttpPost("subscribe/{customerID}/{manufacturerID}")]
+        public async Task<IActionResult> SubscribeToManufacturer([FromRoute] Guid customerID, [FromRoute] Guid manufacturerID)
+        {
+            var result = await _customerService.Subscribe(customerID, manufacturerID);
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
+            else
+                return Ok(new { message = result.msg });
+        }
         [HttpGet("get/{customerID}")]
         public async Task<IActionResult> GetUser([FromRoute] Guid customerID)
         {
@@ -90,6 +98,18 @@ namespace Kawerk.API.Controllers
         public async Task<IActionResult> GetSoldVehicles([FromRoute] Guid customerID,[FromQuery] string startDate, string endDate, string sortColumn, string OrderBy, string SearchTerm, int page = 1, int pageSize = 10)
         {
             var result = await _customerService.GetSoldVehicles(customerID, startDate, endDate, page, sortColumn, OrderBy, SearchTerm, pageSize);
+            return Ok(result);
+        }
+        [HttpGet("get-subscribed-manufacturers/{customerID}")]
+        public async Task<IActionResult> GetSubscribedManufacturers([FromRoute] Guid customerID, [FromQuery] int page = 1, int pageSize = 10)
+        {
+            var result = await _customerService.GetSubscribedManufacturers(customerID, page, pageSize);
+            return Ok(result);
+        }
+        [HttpGet("get-notifications/{customerID}")]
+        public async Task<IActionResult> GetNotifications([FromRoute] Guid customerID, [FromQuery] int page = 1, int pageSize = 10)
+        {
+            var result = await _customerService.GetNotifications(customerID, page, pageSize);
             return Ok(result);
         }
         [HttpGet("get")]
