@@ -49,10 +49,16 @@ namespace Kawerk.API.Controllers
 
             return Ok(result);
         }
-        [HttpGet("get")]
-        public async Task<IActionResult> GetVehicles()
+        [HttpGet("get-vehicles/")]
+        public async Task<IActionResult> GetAllVehicles([FromQuery] string startDate, string endDate,  string sortColumn, string OrderBy, string SearchTerm, int minimumPrice = 0, int maximumPrice = 0, int page = 1, int pageSize = 10)
         {
-            var result = await _vehicleService.GetVehicles();
+            var result = await _vehicleService.GetFilteredVehicles(startDate, endDate, minimumPrice, maximumPrice, page, sortColumn, OrderBy, SearchTerm, pageSize);
+            return Ok(result);
+        }
+        [HttpGet("get")]
+        public async Task<IActionResult> GetVehicles(int page = 1,int pageSize = 10)
+        {
+            var result = await _vehicleService.GetVehicles(page, pageSize);
 
             return Ok(result);
         }
