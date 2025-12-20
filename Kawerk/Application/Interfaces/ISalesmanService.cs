@@ -9,6 +9,6 @@ namespace Kawerk.Application.Interfaces
         public Task<SettersResponse> UpdateSalesman(Guid salesmanID, SalesmanUpdateDTO salesman);
         public Task<SettersResponse> DeleteSalesman(Guid salesmanID);
         public Task<SalesmanViewDTO?> GetSalesman(Guid salesmanID);
-        public Task<List<SalesmanViewDTO>?> GetSalesmen();
+        public Task<PagedList<SalesmanViewDTO>?> GetSalesmen(int page, int pageSize);
     }
 }
