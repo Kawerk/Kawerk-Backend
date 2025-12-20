@@ -38,10 +38,16 @@ namespace Kawerk.API.Controllers
             var result = await _transactionService.GetTransaction(transactionID);
             return Ok(result);
         }
-        [HttpGet("get")]
-        public async Task<IActionResult> GetTransactions()
+        [HttpGet("get/user/{userID}")]
+        public async Task<IActionResult> GetUserTransactions([FromRoute] Guid userID, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _transactionService.GetTransactions();
+            var result = await _transactionService.GetUserTransactions(userID, pageNumber, pageSize);
+            return Ok(result);
+        }
+        [HttpGet("get")]
+        public async Task<IActionResult> GetTransactions(int pageNumber = 1, int pageSize = 10)
+        {
+            var result = await _transactionService.GetTransactions(pageNumber, pageSize);
             return Ok(result);
         }
     }

@@ -134,20 +134,37 @@ namespace Kawerk.Application.Services
             return isTransactionExist;
         }
 
-        public Task<List<TransactionViewDTO>?> GetTransactions()
+        public Task<PagedList<TransactionViewDTO>> GetUserTransactions(Guid userID, int pageNumber, int pageSize)
         {
-            var isTransactionExist = (from t in _db.Transactions
-                                          select new TransactionViewDTO
-                                          {
-                                              TransactionID = t.TransactionID,
-                                              Amount = t.Amount,
-                                              BuyerID = t.Buyer.CustomerID,
-                                              VehicleID = t.Vehicle.VehicleID,
-                                              SellerCustomerID = t.SellerCustomer != null ? t.SellerCustomer.CustomerID : null,
-                                              SellerManufacturerID = t.SellerManufacturer != null ? t.SellerManufacturer.ManufacturerID : null,
-                                              CreatedDate = t.CreatedDate
-                                          }).ToListAsync();
-            return isTransactionExist;
+            var transationQuerry = from t in _db.Transactions
+                                   where t.Buyer.CustomerID == userID || (t.SellerCustomer != null && t.SellerCustomer.CustomerID == userID)
+                                   select new TransactionViewDTO
+                                   {
+                                       TransactionID = t.TransactionID,
+                                       Amount = t.Amount,
+                                       BuyerID = t.Buyer.CustomerID,
+                                       VehicleID = t.Vehicle.VehicleID,
+                                       SellerCustomerID = t.SellerCustomer != null ? t.SellerCustomer.CustomerID : null,
+                                       SellerManufacturerID = t.SellerManufacturer != null ? t.SellerManufacturer.ManufacturerID : null,
+                                       CreatedDate = t.CreatedDate
+                                   };
+            return PagedList<TransactionViewDTO>.CreateAsync(transationQuerry, pageNumber, pageSize);
+        }
+
+        public async Task<PagedList<TransactionViewDTO>> GetTransactions(int page,int pageSize)
+        {
+            var transactionQuerry = (from t in _db.Transactions
+                                      select new TransactionViewDTO
+                                      {
+                                        TransactionID = t.TransactionID,
+                                        Amount = t.Amount,
+                                        BuyerID = t.Buyer.CustomerID,
+                                        VehicleID = t.Vehicle.VehicleID,
+                                        SellerCustomerID = t.SellerCustomer != null ? t.SellerCustomer.CustomerID : null,
+                                        SellerManufacturerID = t.SellerManufacturer != null ? t.SellerManufacturer.ManufacturerID : null,
+                                        CreatedDate = t.CreatedDate
+                                      });
+            return await PagedList<TransactionViewDTO>.CreateAsync(transactionQuerry, page, pageSize);
         }
     }
 }
