@@ -159,23 +159,23 @@ namespace Kawerk.Application.Services
             return isSalesmanExist;
         }
 
-        public async Task<List<SalesmanViewDTO>> GetSalesmen()
+        public async Task<PagedList<SalesmanViewDTO>?> GetSalesmen(int page, int pageSize)
         {
-            var salesmenQuery = await(from s in _db.Salesman
-                                        select new SalesmanViewDTO
-                                        {
-                                            BranchID = s.BranchID,
-                                            SalesmanID = s.SalesmanID,
-                                            Name = s.Name,
-                                            Email = s.Email,
-                                            Phone = s.Phone,
-                                            Address = s.Address,
-                                            City = s.City,
-                                            Country = s.Country,
-                                            Salary = s.Salary,
-                                            CreatedAt = s.CreatedAt,
-                                        }).ToListAsync();
-            return salesmenQuery;
+            var salesmenQuery = (from s in _db.Salesman
+                                 select new SalesmanViewDTO
+                                 {
+                                     BranchID = s.BranchID,
+                                     SalesmanID = s.SalesmanID,
+                                     Name = s.Name,
+                                     Email = s.Email,
+                                     Phone = s.Phone,
+                                     Address = s.Address,
+                                     City = s.City,
+                                     Country = s.Country,
+                                     Salary = s.Salary,
+                                     CreatedAt = s.CreatedAt,
+                                 });
+            return await PagedList<SalesmanViewDTO>.CreateAsync(salesmenQuery, page, pageSize);
         }
 
     }

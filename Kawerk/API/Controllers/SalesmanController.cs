@@ -51,9 +51,9 @@ namespace Kawerk.API.Controllers
                 return Ok(result);
         }
         [HttpGet("get")]
-        public async Task<IActionResult> GetSalesmen()
+        public async Task<IActionResult> GetSalesmen([FromQuery] int page = 1,int pageSize = 10)
         {
-            var result = await _salesmanService.GetSalesmen();
+            var result = await _salesmanService.GetSalesmen(page, pageSize);
             if (result == null)
                 return BadRequest(new { message = "Salesman not found" });
             else

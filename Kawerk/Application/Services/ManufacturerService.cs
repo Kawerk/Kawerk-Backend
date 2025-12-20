@@ -5,6 +5,7 @@ using Kawerk.Infastructure.DTOs.Manufacturer;
 using Kawerk.Infastructure.DTOs.Vehicle;
 using Kawerk.Infastructure.ResponseClasses;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Kawerk.Application.Services
 {
@@ -168,45 +169,79 @@ namespace Kawerk.Application.Services
             //Returning the result
             return isManufacturerExists;
         }
-        public async Task<VehicleManufacturerViewDTO?> GetSoldVehicles(Guid manufacturerID)
+        public async Task<PagedList<VehicleManufacturerViewDTO>> GetSoldVehicles(Guid manufacturerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
         {
             //Checcking ID validity
             if (manufacturerID == Guid.Empty)
                 return null;
             //Getting Vehicle from Database
-            var isVehicleExists = await (from v in _db.Vehicles
-                                         where v.ManufacturerID == manufacturerID
-                                         select new VehicleManufacturerViewDTO
-                                         {
-                                             ManufacturerID = v.ManufacturerID,
-                                             VehicleID = v.VehicleID,
-                                             Name = v.Name,
-                                             Description = v.Description,
-                                             Price = v.Price,
-                                             Type = v.Type,
-                                             EngineCapacity = v.EngineCapacity,
-                                             FuelType = v.FuelType,
-                                             Images = v.Images,
-                                             SeatingCapacity = v.SeatingCapacity,
-                                             Status = v.Status,
-                                         }).FirstOrDefaultAsync();
-            //Returning the result
-            return isVehicleExists;
+            var vehiclesQuery = (from v in _db.Vehicles
+                                   where v.ManufacturerID == manufacturerID
+                                   select v);
+
+            DateTime validStartDate, validEndDate;
+            if (DateTime.TryParse(startDate, out validStartDate))
+            {
+                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate > validStartDate);
+            }
+            if (DateTime.TryParse(endDate, out validEndDate))
+            {
+                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate < validEndDate);
+            }
+            if (!string.IsNullOrEmpty(searchTerm))
+                vehiclesQuery = vehiclesQuery.Where(u => u.Name.Contains(searchTerm) ||
+                u.Description.Contains(searchTerm) || u.Type.Contains(searchTerm) || u.FuelType.Contains(searchTerm));
+            if (!string.IsNullOrEmpty(sortColumn))
+            {
+                Expression<Func<Vehicle, object>> keySelector = sortColumn.ToLower() switch // throws error when sortColumn is null
+                {
+                    "name" or "n" => Vehicle => Vehicle.Name,
+                    "price" or "p" => Vehicle => Vehicle.Price,
+                    "type" or "t" => Vehicle => Vehicle.Type,
+                    "enginecapacity" or "ec" => Vehicle => Vehicle.EngineCapacity,
+                    "fueltype" or "f" => Vehicle => Vehicle.FuelType,
+                    "seatingcapacity" or "sc" => Vehicle => Vehicle.SeatingCapacity,
+                    "status" or "s" => Vehicle => Vehicle.Status,
+                    _ => Vehicle => Vehicle.VehicleID,
+                };
+                if (!string.IsNullOrEmpty(OrderBy)) vehiclesQuery = vehiclesQuery.OrderBy(keySelector);
+                else vehiclesQuery = vehiclesQuery.OrderBy(keySelector);
+            }
+            var vehiclesResponse = vehiclesQuery
+                                    .Select(v => new VehicleManufacturerViewDTO
+                                    {
+                                        ManufacturerID = v.ManufacturerID,
+                                        VehicleID = v.VehicleID,
+                                        Name = v.Name,
+                                        Description = v.Description,
+                                        Price = v.Price,
+                                        Type = v.Type,
+                                        EngineCapacity = v.EngineCapacity,
+                                        FuelType = v.FuelType,
+                                        SeatingCapacity = v.SeatingCapacity,
+                                        Transmission = v.Transmission,
+                                        Year = v.Year,
+                                        Status = v.Status,
+                                        Images = v.Images
+                                    });
+
+
+            return await PagedList<VehicleManufacturerViewDTO>.CreateAsync(vehiclesResponse, page, pageSize);
         }
-        public async Task<List<ManufacturerViewDTO>?> GetManufacturers()
+        public async Task<PagedList<ManufacturerViewDTO>?> GetManufacturers(int page, int pageSize)
         {
             //Getting Manufacturer from Database
-            var manufacturerQuery = await (from m in _db.Manufacturers
-                                           select new ManufacturerViewDTO
-                                           {
-                                               ManufacturerID = m.ManufacturerID,
-                                               Name = m.Name,
-                                               Description = m.Description,
-                                               Type = m.Type,
-                                           }).ToListAsync();
+            var manufacturerQuery = (from m in _db.Manufacturers
+                                     select new ManufacturerViewDTO
+                                     {
+                                        ManufacturerID = m.ManufacturerID,
+                                        Name = m.Name,
+                                        Description = m.Description,
+                                        Type = m.Type,
+                                     });
 
             //Returning the result
-            return manufacturerQuery;
+            return await PagedList<ManufacturerViewDTO>.CreateAsync(manufacturerQuery, page, pageSize);
         }
 
     }
