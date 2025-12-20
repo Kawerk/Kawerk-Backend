@@ -74,22 +74,28 @@ namespace Kawerk.API.Controllers
 
             return Ok(result);
         }
-        [HttpGet("get-bought-vehicles/{customerID}")]
-        public async Task<IActionResult> GetUserVehicles([FromRoute] Guid customerID)
+        [HttpGet("get-search")]
+        public async Task<IActionResult> SearchUsers([FromQuery] string startDate, string endDate, string sortColumn, string OrderBy, string SearchTerm, int page = 1, int pageSize = 10)
         {
-            var result = await _customerService.GetBoughtVehicles(customerID);
+            var result = await _customerService.GetFilteredCustomers(startDate, endDate, page, sortColumn, OrderBy, SearchTerm, pageSize);
+            return Ok(result);
+        }
+        [HttpGet("get-bought-vehicles/{customerID}")]
+        public async Task<IActionResult> GetUserVehicles([FromRoute] Guid customerID,[FromQuery] string startDate, string endDate, string sortColumn, string OrderBy, string SearchTerm, int page = 1, int pageSize = 10)
+        {
+            var result = await _customerService.GetBoughtVehicles(customerID, startDate, endDate, page, sortColumn, OrderBy, SearchTerm, pageSize);
             return Ok(result);
         }
         [HttpGet("get-sold-vehicles/{customerID}")]
-        public async Task<IActionResult> GetSoldVehicles([FromRoute] Guid customerID)
+        public async Task<IActionResult> GetSoldVehicles([FromRoute] Guid customerID,[FromQuery] string startDate, string endDate, string sortColumn, string OrderBy, string SearchTerm, int page = 1, int pageSize = 10)
         {
-            var result = await _customerService.GetSoldVehicles(customerID);
+            var result = await _customerService.GetSoldVehicles(customerID, startDate, endDate, page, sortColumn, OrderBy, SearchTerm, pageSize);
             return Ok(result);
         }
         [HttpGet("get")]
-        public async Task<IActionResult> GetUsers()
+        public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _customerService.GetCustomers();
+            var result = await _customerService.GetCustomers(page, pageSize);
 
             return Ok(result);
         }

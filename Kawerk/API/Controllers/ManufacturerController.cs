@@ -60,18 +60,18 @@ namespace Kawerk.API.Controllers
                 return Ok(result);
         }
         [HttpGet("get-sold-vehicles/{manufacturerID}")]
-        public async Task<IActionResult> GetSoldVehicles([FromRoute] Guid manufacturerID)
+        public async Task<IActionResult> GetSoldVehicles([FromRoute] Guid manufacturerID,[FromQuery] string startDate, string endDate, string sortColumn, string OrderBy, string SearchTerm, int page = 1, int pageSize = 10)
         {
-            var result = await _manufacturerService.GetSoldVehicles(manufacturerID);
+            var result = await _manufacturerService.GetSoldVehicles(manufacturerID, startDate, endDate, page, sortColumn, OrderBy, SearchTerm, pageSize);
             if (result == null)
                 return NotFound(new { message = "not found" });
             else
                 return Ok(result);
         }
         [HttpGet("get")]
-        public async Task<IActionResult> GetManufacturers()
+        public async Task<IActionResult> GetManufacturers(int page = 1, int pageSize = 10)
         {
-            var result = await _manufacturerService.GetManufacturers();
+            var result = await _manufacturerService.GetManufacturers(page, pageSize);
 
             if (result == null)
                 return NotFound(new { message = "Empty Database" });

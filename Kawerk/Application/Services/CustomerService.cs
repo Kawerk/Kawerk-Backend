@@ -1,12 +1,14 @@
-﻿using Kawerk.Domain;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Kawerk.Infastructure.DTOs.Vehicle;
-using System.ComponentModel.DataAnnotations;
+﻿using Kawerk.Application.Interfaces;
+using Kawerk.Domain;
 using Kawerk.Infastructure.Context;
 using Kawerk.Infastructure.DTOs.Customer;
+using Kawerk.Infastructure.DTOs.Vehicle;
 using Kawerk.Infastructure.ResponseClasses;
-using Kawerk.Application.Interfaces;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 
 namespace Kawerk.Application.Services
 {
@@ -273,46 +275,156 @@ namespace Kawerk.Application.Services
         //-----------------------------------------------------------------------
 
         //        *********** Getters ***********
-        public async Task<List<VehicleViewDTO>?> GetBoughtVehicles(Guid customerID)
+        public async Task<PagedList<CustomerViewDTO>?> GetFilteredCustomers(string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
         {
-            var vehicles = await (from v in _db.Vehicles
-                                  where v.BuyerID == customerID
-                                  select new VehicleViewDTO
-                                  {
-                                      VehicleID = v.VehicleID,
-                                      Name = v.Name,
-                                      Description = v.Description,
-                                      Price = v.Price,
-                                      Type = v.Type,
-                                      EngineCapacity = v.EngineCapacity,
-                                      FuelType = v.FuelType,
-                                      Images = v.Images,
-                                      SeatingCapacity = v.SeatingCapacity,
-                                      Status = v.Status,
-                                      Transmission = v.Transmission,
-                                      Year = v.Year
-                                  }).ToListAsync();
-            return vehicles;
+            IQueryable<Customer> customerQuery = _db.Customers;
+            DateTime validStartDate, validEndDate;
+            if (DateTime.TryParse(startDate, out validStartDate))
+            {
+                customerQuery = customerQuery.Where(u => u.CreatedAt > validStartDate);
+            }
+            if (DateTime.TryParse(endDate, out validEndDate))
+            {
+                customerQuery = customerQuery.Where(u => u.CreatedAt < validEndDate);
+            }
+            if (!string.IsNullOrEmpty(searchTerm))
+                customerQuery = customerQuery.Where(u => u.Name.Contains(searchTerm) ||
+                u.Username.Contains(searchTerm) || u.Email.Contains(searchTerm));
+
+            if (!string.IsNullOrEmpty(sortColumn))
+            {
+                Expression<Func<Customer, object>> keySelector = sortColumn.ToLower() switch // throws error when sortColumn is null
+                {
+                    "name" or "n" => Customer => Customer.Name,
+                    "email" or "e" => Customer => Customer.Email,
+                    "country" or "co" => Customer => Customer.Country,
+                    "city" or "ci" => Customer => Customer.City,
+                    "createdat" or "ca" => Customer => Customer.CreatedAt,
+                    _ => Customer => Customer.CustomerID,
+                };
+                if (!string.IsNullOrEmpty(OrderBy)) customerQuery = customerQuery.OrderBy(keySelector);
+                else customerQuery = customerQuery.OrderBy(keySelector);
+            }
+
+            var customerResponse = customerQuery.Select(c => new CustomerViewDTO
+            {
+                CustomerID = c.CustomerID,
+                Name = c.Name,
+                Username = c.Username,
+                Address = c.Address,
+                City = c.City,
+                Country = c.Country,
+                Phone = c.Phone,
+                ProfileUrl = c.ProfileUrl
+            });
+            return await PagedList<CustomerViewDTO>.CreateAsync(customerResponse, page, pageSize);
         }
-        public async Task<List<VehicleSellerViewDTO>?> GetSoldVehicles(Guid customerID)
+        public async Task<PagedList<VehicleViewDTO>?> GetBoughtVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
         {
-            var vehicles = await (from v in _db.Vehicles
-                                  where v.SellerID == customerID
-                                  select new VehicleSellerViewDTO
-                                  {
-                                      SellerID = v.SellerID,
-                                      VehicleID = v.VehicleID,
-                                      Name = v.Name,
-                                      Description = v.Description,
-                                      Price = v.Price,
-                                      Type = v.Type,
-                                      EngineCapacity = v.EngineCapacity,
-                                      FuelType = v.FuelType,
-                                      Images = v.Images,
-                                      SeatingCapacity = v.SeatingCapacity,
-                                      Status = v.Status,
-                                  }).ToListAsync();
-            return vehicles;
+            var vehiclesQuery = (from v in _db.Vehicles
+                            where v.BuyerID == customerID
+                            select v);
+            DateTime validStartDate, validEndDate;
+            if (DateTime.TryParse(startDate, out validStartDate))
+            {
+                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate > validStartDate);
+            }
+            if (DateTime.TryParse(endDate, out validEndDate))
+            {
+                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate < validEndDate);
+            }
+            if (!string.IsNullOrEmpty(searchTerm))
+                vehiclesQuery = vehiclesQuery.Where(u => u.Name.Contains(searchTerm) ||
+                u.Description.Contains(searchTerm) || u.Type.Contains(searchTerm) || u.FuelType.Contains(searchTerm));
+            if (!string.IsNullOrEmpty(sortColumn))
+            {
+                Expression<Func<Vehicle, object>> keySelector = sortColumn.ToLower() switch // throws error when sortColumn is null
+                {
+                    "name" or "n" => Vehicle => Vehicle.Name,
+                    "price" or "p" => Vehicle => Vehicle.Price,
+                    "type" or "t" => Vehicle => Vehicle.Type,
+                    "enginecapacity" or "ec" => Vehicle => Vehicle.EngineCapacity,
+                    "fueltype" or "f" => Vehicle => Vehicle.FuelType,
+                    "seatingcapacity" or "sc" => Vehicle => Vehicle.SeatingCapacity,
+                    "status" or "s" => Vehicle => Vehicle.Status,
+                    _ => Vehicle => Vehicle.VehicleID,
+                };
+                if (!string.IsNullOrEmpty(OrderBy)) vehiclesQuery = vehiclesQuery.OrderBy(keySelector);
+                else vehiclesQuery = vehiclesQuery.OrderBy(keySelector);
+            }
+            var vehiclesResponse = vehiclesQuery
+                                    .Select(v => new VehicleViewDTO
+                                    {
+                                        VehicleID = v.VehicleID,
+                                        Name = v.Name,
+                                        Description = v.Description,
+                                        Price = v.Price,
+                                        Type = v.Type,
+                                        EngineCapacity = v.EngineCapacity,
+                                        FuelType = v.FuelType,
+                                        SeatingCapacity = v.SeatingCapacity,
+                                        Transmission = v.Transmission,
+                                        Year = v.Year,
+                                        Status = v.Status,
+                                        Images = v.Images
+                                    });
+
+
+            return await PagedList<VehicleViewDTO>.CreateAsync(vehiclesResponse, page, pageSize);
+        }
+        public async Task<PagedList<VehicleSellerViewDTO>?> GetSoldVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
+        {
+            var vehiclesQuery = (from v in _db.Vehicles
+                            where v.SellerID == customerID
+                            select v);
+            DateTime validStartDate, validEndDate;
+            if (DateTime.TryParse(startDate, out validStartDate))
+            {
+                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate > validStartDate);
+            }
+            if (DateTime.TryParse(endDate, out validEndDate))
+            {
+                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate < validEndDate);
+            }
+            if (!string.IsNullOrEmpty(searchTerm))
+                vehiclesQuery = vehiclesQuery.Where(u => u.Name.Contains(searchTerm) ||
+                u.Description.Contains(searchTerm) || u.Type.Contains(searchTerm) || u.FuelType.Contains(searchTerm));
+            if (!string.IsNullOrEmpty(sortColumn))
+            {
+                Expression<Func<Vehicle, object>> keySelector = sortColumn.ToLower() switch // throws error when sortColumn is null
+                {
+                    "name" or "n" => Vehicle => Vehicle.Name,
+                    "price" or "p" => Vehicle => Vehicle.Price,
+                    "type" or "t" => Vehicle => Vehicle.Type,
+                    "enginecapacity" or "ec" => Vehicle => Vehicle.EngineCapacity,
+                    "fueltype" or "f" => Vehicle => Vehicle.FuelType,
+                    "seatingcapacity" or "sc" => Vehicle => Vehicle.SeatingCapacity,
+                    "status" or "s" => Vehicle => Vehicle.Status,
+                    _ => Vehicle => Vehicle.VehicleID,
+                };
+                if (!string.IsNullOrEmpty(OrderBy)) vehiclesQuery = vehiclesQuery.OrderBy(keySelector);
+                else vehiclesQuery = vehiclesQuery.OrderBy(keySelector);
+            }
+            var vehiclesResponse = vehiclesQuery
+                                    .Select(v => new VehicleSellerViewDTO
+                                    {
+                                        SellerID = v.SellerID,
+                                        VehicleID = v.VehicleID,
+                                        Name = v.Name,
+                                        Description = v.Description,
+                                        Price = v.Price,
+                                        Type = v.Type,
+                                        EngineCapacity = v.EngineCapacity,
+                                        FuelType = v.FuelType,
+                                        SeatingCapacity = v.SeatingCapacity,
+                                        Transmission = v.Transmission,
+                                        Year = v.Year,
+                                        Status = v.Status,
+                                        Images = v.Images
+                                    });
+
+
+            return await PagedList<VehicleSellerViewDTO>.CreateAsync(vehiclesResponse, page, pageSize);
         }
         public async Task<CustomerViewDTO?> GetCustomer(Guid customerID)
         {
@@ -334,10 +446,10 @@ namespace Kawerk.Application.Services
             //Returning Customer
             return customer;
         }
-        public async Task<List<CustomerViewDTO>?> GetCustomers()
+        public async Task<PagedList<CustomerViewDTO>?> GetCustomers(int page,int pageSize)
         {
             //Getting customers from Database and projecting to CustomerDTO
-            var customersQuery = await(from c in _db.Customers
+            var customersQuery = from c in _db.Customers
                                  select new CustomerViewDTO
                                  {
                                      CustomerID = c.CustomerID,
@@ -348,10 +460,10 @@ namespace Kawerk.Application.Services
                                      Country = c.Country,
                                      Phone = c.Phone,
                                      ProfileUrl = c.ProfileUrl
-                                 }).ToListAsync();
+                                 };
 
-            return customersQuery;
+            return await PagedList<CustomerViewDTO>.CreateAsync(customersQuery, page, pageSize);
         }
-
+        
     }
 }

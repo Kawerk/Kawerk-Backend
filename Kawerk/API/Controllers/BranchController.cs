@@ -67,18 +67,18 @@ namespace Kawerk.API.Controllers
                 return Ok(result);
         }
         [HttpGet("get-salesmen/{branchID}")]
-        public async Task<IActionResult> GetBranchSalesmen([FromRoute] Guid branchID)
+        public async Task<IActionResult> GetBranchSalesmen([FromRoute] Guid branchID, string startDate, string endDate, string sortColumn, string OrderBy, string SearchTerm, int page = 1, int pageSize = 10)
         {
-            var result = await _branchService.GetBranchSalesmen(branchID);
+            var result = await _branchService.GetBranchSalesmen(branchID, startDate, endDate, page, sortColumn, OrderBy, SearchTerm, pageSize);
             if (result == null)
                 return BadRequest(new { message = "No salesmen in this branch" });
             else
                 return Ok(result);
         }
         [HttpGet("get")]
-        public async Task<IActionResult> GetBranches()
+        public async Task<IActionResult> GetBranches(int page = 1, int pageSize = 10)
         {
-            var result = await _branchService.GetBranches();
+            var result = await _branchService.GetBranches(page, pageSize);
             if (result == null)
                 return BadRequest(new { message = "No branches in database" });
             else

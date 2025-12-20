@@ -4,9 +4,11 @@ using Kawerk.Infastructure.Context;
 using Kawerk.Infastructure.DTOs.Branch;
 using Kawerk.Infastructure.DTOs.Salesman;
 using Kawerk.Infastructure.ResponseClasses;
+using Microsoft.AspNet.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 
 namespace Kawerk.Application.Services
 {
@@ -216,44 +218,71 @@ namespace Kawerk.Application.Services
             //returning result
             return isBranchExisting;
         }
-        public async Task<List<SalesmanViewDTO>?> GetBranchSalesmen(Guid branchID)
+        public async Task<PagedList<SalesmanViewDTO>?> GetBranchSalesmen(Guid branchID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize = 5)
         {
             if(branchID == Guid.Empty)
                 return null;
             //Getting branch salesmen from Database and projecting to SalesmanDTO
-            var salesmenQuery = await (from b in _db.Branches
-                                       where b.BranchID == branchID
-                                       from s in b.Salesmen
-                                       select new SalesmanViewDTO
-                                       {
-                                           SalesmanID = s.SalesmanID,
-                                           Name = s.Name,
-                                           Email = s.Email,
-                                           Password = s.Password,
-                                           Phone = s.Phone,
-                                           Salary = s.Salary,
-                                           Address = s.Address,
-                                           City = s.City,
-                                           Country = s.Country,
-                                           CreatedAt = s.CreatedAt
-                                       }).ToListAsync();
-            //returning result
-            return salesmenQuery;
+            var salesmenQuery = (from b in _db.Branches
+                                 where b.BranchID == branchID
+                                 from s in b.Salesmen
+                                 select s);
+
+            DateTime validStartDate, validEndDate;
+            if (DateTime.TryParse(startDate, out validStartDate))
+            {
+                salesmenQuery = salesmenQuery.Where(u => u.CreatedAt > validStartDate);
+            }
+            if (DateTime.TryParse(endDate, out validEndDate))
+            {
+                salesmenQuery = salesmenQuery.Where(u => u.CreatedAt < validEndDate);
+            }
+            if (!string.IsNullOrEmpty(searchTerm)) salesmenQuery = salesmenQuery.Where(u => u.Name.Contains(searchTerm) || u.Email.Contains(searchTerm));
+
+            if (!string.IsNullOrEmpty(sortColumn))
+            {
+                Expression<Func<Salesman, object>> keySelector = sortColumn.ToLower() switch // throws error when sortColumn is null
+                {
+                    "name" or "n" => Salesman => Salesman.Name,
+                    "email" or "e" => Salesman => Salesman.Email,
+                    "country" or "co" => Salesman => Salesman.Country,
+                    "city" or "ci" => Salesman => Salesman.City,
+                    "address" or "a" => Salesman => Salesman.Address,
+                    "createdat" or "ca" => Salesman => Salesman.CreatedAt,
+                    _ => Salesman => Salesman.SalesmanID,
+                };
+                if (!string.IsNullOrEmpty(OrderBy)) salesmenQuery = salesmenQuery.OrderBy(keySelector);
+                else salesmenQuery = salesmenQuery.OrderBy(keySelector);
+            }
+            var salesmanResponse = salesmenQuery
+                                .Select(u => new SalesmanViewDTO
+                                {
+                                    SalesmanID = u.SalesmanID,
+                                    Name = u.Name,
+                                    Email = u.Email,
+                                    Address = u.Address,
+                                    Phone = u.Phone,
+                                    Salary = u.Salary,
+                                    City = u.City,
+                                    Country = u.Country,
+                                    CreatedAt = u.CreatedAt
+                                });
+            return await PagedList<SalesmanViewDTO>.CreateAsync(salesmanResponse, page, pageSize);
         }
-        public async Task<List<BranchViewDTO>?> GetBranches()
+        public async Task<PagedList<BranchViewDTO>?> GetBranches(int page,int pageSize)
         {
             //Getting branches from Database and projecting to BranchDTO
-            var branchQuery = await(from b in _db.Branches
-                                         select new BranchViewDTO
-                                         {
+            var branchQuery = (from b in _db.Branches
+                               select new BranchViewDTO
+                               {
                                              BranchID = b.BranchID,
-                                             Name = b.Name,
-                                             Description = b.Description,
-                                             Location = b.Location,
-                                             CreatedAt = b.CreatedAt
-                                         }).ToListAsync();
+                                   Name = b.Name,
+                                   Description = b.Description,
+                                   Location = b.Location,
+                                   CreatedAt = b.CreatedAt
+                               });
             //returning result
-            return branchQuery;
+            return await PagedList<BranchViewDTO>.CreateAsync(branchQuery, page, pageSize);
         }
     }
 }
