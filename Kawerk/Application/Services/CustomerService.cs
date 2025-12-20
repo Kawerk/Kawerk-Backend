@@ -49,6 +49,7 @@ namespace Kawerk.Application.Services
                 Email = customer.Email,
                 Password = new PasswordHasher<Customer>().HashPassword(null, customer.Password),
                 CreatedAt = DateTime.Now,
+                Role = "Customer"
             };
 
             //Saving to Database

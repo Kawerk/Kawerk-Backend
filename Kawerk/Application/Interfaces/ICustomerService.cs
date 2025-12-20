@@ -14,6 +14,7 @@ namespace Kawerk.Application.Interfaces
         public Task<CustomerViewDTO?> GetCustomer(Guid customerID);
         public Task<List<VehicleViewDTO>?> GetBoughtVehicles(Guid customerID);
         public Task<List<VehicleSellerViewDTO>?> GetSoldVehicles(Guid customerID);
+        public Task<PagedList<>>
         public Task<List<CustomerViewDTO>?> GetCustomers();
     }
 }

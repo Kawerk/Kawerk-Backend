@@ -20,6 +20,7 @@ namespace Kawerk.Domain
         //Relationships
         public List<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
         public List<Transaction> Transactions { get; set; } = new List<Transaction>();
+        public List<Customer> Subscribers { get; set; } = new List<Customer>();
 
     }
 }

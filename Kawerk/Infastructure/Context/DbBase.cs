@@ -12,6 +12,7 @@ namespace Kawerk.Infastructure.Context
         public DbSet<Branches> Branches { get; set; }
         public DbSet<Salesman> Salesman { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -78,6 +79,12 @@ namespace Kawerk.Infastructure.Context
                 .HasOne(t => t.SellerManufacturer)
                 .WithMany(m => m.Transactions)
                 .HasForeignKey(t => t.SellerManufacturerID);
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Customer)
+                .WithMany(c => c.Notifications)
+                .HasForeignKey(n => n.CustomerID)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
     }

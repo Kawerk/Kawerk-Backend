@@ -131,6 +131,35 @@ namespace Kawerk.Application.Services
 
             //Selling Vehicle
             isVehicleExists.ManufacturerID = manufacturerID;
+
+            //--------------------------------------------
+
+            //Observer Design Pattern Implementation
+
+            //Notifying Subscribers
+            var manufacturerSubscribers = await (from c in _db.Customers
+                                              where c.SubscribedManufacturers.Any(sm => sm.ManufacturerID == manufacturerID)
+                                              select c).ToListAsync();
+            if (manufacturerSubscribers.Count != 0)
+            {
+                // Notify subscribers
+                foreach (var subscriber in manufacturerSubscribers)
+                {
+                    // Send notification to subscriber
+                    Notification newNotification = new Notification
+                    {
+                        NotificationId = Guid.NewGuid(),
+                        Title = "New Vehicle Sold",
+                        Message = $"A new vehicle '{isVehicleExists.Name}' has been sold by manufacturer '{isManufacturerExists.Name}'.",
+                        CreatedAt = DateTime.UtcNow,
+                        CustomerID = subscriber.CustomerID,
+                        Customer = subscriber
+                    };
+                    await _db.Notifications.AddAsync(newNotification);
+                }
+            }
+            //--------------------------------------------
+
             _db.Vehicles.Update(isVehicleExists);
             await _db.SaveChangesAsync();
             return new SettersResponse { status = 1, msg = "Vehicle sold successfully" };
