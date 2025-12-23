@@ -13,6 +13,7 @@ namespace Kawerk.Infastructure.Context
         public DbSet<Salesman> Salesman { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<RefreshTokens> RefreshTokens { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -85,6 +86,11 @@ namespace Kawerk.Infastructure.Context
                 .WithMany(c => c.Notifications)
                 .HasForeignKey(n => n.CustomerID)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Customer>()
+                .HasOne(c => c.RefreshToken)
+                .WithOne(r => r.Customer)
+                .HasForeignKey<RefreshTokens>(r => r.CustomerID);
         }
 
     }
