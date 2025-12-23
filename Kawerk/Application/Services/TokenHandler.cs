@@ -102,7 +102,7 @@ namespace Kawerk.Application.Services
 
             var Response = new ResponseToken
             {
-                Status = 1,
+                status = 1,
                 AccessToken = Token,
                 RefreshToken = result.RefreshToken,
                 msg = "Token refreshed successfully"

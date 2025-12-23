@@ -8,7 +8,8 @@ namespace Kawerk.Application.Interfaces
 {
     public interface ICustomerService
     {
-        public Task<SettersResponse> CreateCustomer(CustomerCreationDTO customer);
+        public Task<ResponseToken> CreateCustomer(CustomerCreationDTO customer);
+        public Task<ResponseToken> Login(string email, string password);
         public Task<SettersResponse> UpdateCustomer(Guid customerID, CustomerUpdateDTO customer);
         public Task<SettersResponse> DeleteCustomer(Guid customerID);
         public Task<SettersResponse> BuyVehicle(Guid customerID, Guid vehicleID);

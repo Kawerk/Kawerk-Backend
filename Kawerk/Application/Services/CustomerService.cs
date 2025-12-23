@@ -17,32 +17,34 @@ namespace Kawerk.Application.Services
     public class CustomerService : ICustomerService
     {
         private readonly DbBase _db;
+        private readonly ITokenHandler _tokenHandler;
 
-        public CustomerService(DbBase db)
+        public CustomerService(DbBase db,ITokenHandler tokenHandler)
         {
             _db = db;
+            _tokenHandler = tokenHandler;
         }
 
 
         //        *********** Setters ***********
-        public async Task<SettersResponse> CreateCustomer(CustomerCreationDTO customer)//0 == Faulty DTO || 1 == Invalid Email || 2 == Invalid Password || 3 == Customer already Exists || 4 == Customer created Succesfully
+        public async Task<ResponseToken> CreateCustomer(CustomerCreationDTO customer)//0 == Faulty DTO || 1 == Invalid Email || 2 == Invalid Password || 3 == Customer already Exists || 4 == Customer created Succesfully
         {
             //Checking customerDTO validity
             if(customer == null)
-                return new SettersResponse { status = 0, msg = "Faulty DTO" };
+                return new ResponseToken { status = 0, msg = "Faulty DTO" };
 
             if (!IsEmailValid(customer.Email))
-                return new SettersResponse { status = 0, msg = "Invalid Email" };
+                return new ResponseToken { status = 0, msg = "Invalid Email" };
 
             if(!await IsPasswordValid(customer.Password))
-                return new SettersResponse { status = 0, msg = "Invalid Password" };
+                return new ResponseToken { status = 0, msg = "Invalid Password" };
 
             //Checking if User already exists
             var isCustomerExists = await _db.Customers.AnyAsync(c=>c.Username.ToLower() == customer.Username.ToLower() ||
                                                      c.Email.ToLower() == customer.Email.ToLower());
             //If User exists return
             if (isCustomerExists)
-                return new SettersResponse { status = 0, msg = "Customer already exists" };
+                return new ResponseToken { status = 0, msg = "Customer already exists" };
 
             //Creating new Customer
             Customer newCustomer = new Customer
@@ -56,10 +58,17 @@ namespace Kawerk.Application.Services
                 Role = "Customer"
             };
 
+            var AccessToken = await _tokenHandler.CreateAccessToken(newCustomer.CustomerID, newCustomer.Name, newCustomer.Email, newCustomer.Role);
+            var RefreshToken = await _tokenHandler.RefreshingToken(newCustomer.CustomerID);
+
             //Saving to Database
             await _db.Customers.AddAsync(newCustomer);
             await _db.SaveChangesAsync();
-            return new SettersResponse { status = 1, msg = "Customer created successfully" };
+            return new ResponseToken { 
+                status = 1,
+                AccessToken = AccessToken,
+                RefreshToken = RefreshToken,
+                msg = "Customer created successfully" };
         }
         public async Task<SettersResponse> UpdateCustomer(Guid customerID,CustomerUpdateDTO customer)//0 == Faulty DTO || 1 == Customer does not exist  || 2 == username is already used || 3 == Updated Successful
         {
@@ -107,6 +116,37 @@ namespace Kawerk.Application.Services
             _db.Customers.Update(isCustomerExists);
             await _db.SaveChangesAsync();
             return new SettersResponse { status = 1, msg = "Updated Successfully" };
+        }
+        public async Task<ResponseToken> Login(string email, string password)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+                return new ResponseToken { status = 0, msg = "FaultyDTO" };
+
+            var isCustomerExists = await (from c in _db.Customers
+                                          where c.Email.ToLower() == email.ToLower()
+                                          select c).FirstOrDefaultAsync();
+
+            if(isCustomerExists == null)
+                return new ResponseToken { status = 0, msg = "User not found" };
+            
+            var result = new PasswordHasher<Customer>().VerifyHashedPassword(isCustomerExists,isCustomerExists.Password,password);
+            if (result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+                return new ResponseToken { status = 0, msg = "Invalid Password" };
+            else
+            {
+                //Creating Tokens
+                var AccessToken = await _tokenHandler.CreateAccessToken(isCustomerExists.CustomerID, isCustomerExists.Name, isCustomerExists.Email, isCustomerExists.Role);
+                var RefreshToken = await _tokenHandler.RefreshingToken(isCustomerExists.CustomerID);
+
+                //Returning Tokens 
+                return new ResponseToken
+                {
+                    status = 1,
+                    AccessToken = AccessToken,
+                    RefreshToken = RefreshToken,
+                    msg = "Login successful"
+                };
+            }
         }
         public async Task<SettersResponse> DeleteCustomer(Guid customerID)
         {
