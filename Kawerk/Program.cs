@@ -52,7 +52,7 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<ITokenHandler, Kawerk.Application.Services.TokenHandler>();
 builder.Services.AddDbContext<DbBase>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("VpsConnection"));
+    options.UseSqlServer(builder.Configuration["ConnectionStrings:LocalConnection"]);
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
@@ -81,19 +81,19 @@ builder.Services.ConfigureHttpJsonOptions(x =>
 
 var app = builder.Build();
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    try
-//    {
-//        var db = scope.ServiceProvider.GetRequiredService<DbBase>();
-//        db.Database.Migrate();
-//    }
-//    catch (Exception ex)
-//    {
-//        // Log but don’t crash startup
-//        Console.WriteLine($"Migration failed: {ex.Message}");
-//    }
-//}
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<DbBase>();
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        // Log but don’t crash startup
+        Console.WriteLine($"Migration failed: {ex.Message}");
+    }
+}
 
 // Configure the HTTP request pipeline.
 
