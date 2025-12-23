@@ -52,8 +52,7 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<ITokenHandler, Kawerk.Application.Services.TokenHandler>();
 builder.Services.AddDbContext<DbBase>(options =>
 {
-    //options.UseSqlServer("Data Source=DESKTOP-OR6CO4J\\SQLEXPRESS;Initial Catalog=Kawerk;Integrated Security=True;Trust Server Certificate=True");//depends on your server!!!
-    options.UseSqlServer("Server=localhost,1433;Database=Kawerk;User Id=sa;Password=Gymapp_2025;Trust Server Certificate=True");
+    options.UseSqlServer(builder.Configuration.GetConnectionString("VpsConnection"));
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
@@ -82,19 +81,19 @@ builder.Services.ConfigureHttpJsonOptions(x =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    try
-    {
-        var db = scope.ServiceProvider.GetRequiredService<DbBase>();
-        db.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        // Log but don’t crash startup
-        Console.WriteLine($"Migration failed: {ex.Message}");
-    }
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    try
+//    {
+//        var db = scope.ServiceProvider.GetRequiredService<DbBase>();
+//        db.Database.Migrate();
+//    }
+//    catch (Exception ex)
+//    {
+//        // Log but don’t crash startup
+//        Console.WriteLine($"Migration failed: {ex.Message}");
+//    }
+//}
 
 // Configure the HTTP request pipeline.
 
