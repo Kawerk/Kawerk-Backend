@@ -20,18 +20,18 @@ builder.Services.AddScoped<ISalesmanService, SalesmanService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddDbContext<DbBase>(options =>
 {
-    options.UseSqlServer("Data Source=DESKTOP-OR6CO4J\\SQLEXPRESS;Initial Catalog=Kawerk;Integrated Security=True;Trust Server Certificate=True");//depends on your server!!!
+    //options.UseSqlServer("Data Source=DESKTOP-OR6CO4J\\SQLEXPRESS;Initial Catalog=Kawerk;Integrated Security=True;Trust Server Certificate=True");//depends on your server!!!
+    options.UseSqlServer("Server=localhost,1433;Database=Kawerk;User Id=sa;Password=Gymapp_2025;Trust Server Certificate=True");
 });
 
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
