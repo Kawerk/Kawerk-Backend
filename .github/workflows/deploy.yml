@@ -39,8 +39,8 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "Kawerk-Prod/*"
-          target: "/root/Kawerk-Backend/Kawerk-Prod"
+          source: "Kawerk-Prod"
+          target: "/root/Kawerk-Backend/"
       - name: Restart service
         uses: appleboy/ssh-action@v1.0.0
         with:
