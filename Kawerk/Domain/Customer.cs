@@ -32,13 +32,12 @@ namespace Kawerk.Domain
         public string? AdministratorOf { get; set; } //If the customer is a manufacturer admin, this field will store the Manufacturer Name they administer, This could also apply if the manage a branch
 
         //Relationships
+        public RefreshTokens? RefreshToken { get; set; } 
         public List<Vehicle> VehiclesBought { get; set; } = new List<Vehicle>();
         public List<Vehicle> VehiclesSold { get; set; } = new List<Vehicle>();
         public List<Transaction> Purchases { get; set; } = new List<Transaction>();
         public List<Transaction> Sells { get; set; } = new List<Transaction>();
         public List<Manufacturer> SubscribedManufacturers { get; set; } = new List<Manufacturer>();
         public List<Notification> Notifications { get; set; } = new List<Notification>();
-
-
     }
 }

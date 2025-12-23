@@ -1,9 +1,11 @@
 ﻿using Kawerk.Application.Interfaces;
 using Kawerk.Infastructure.DTOs.Salesman;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kawerk.API.Controllers
 {
+    [Authorize]
     [Route("api/v1/salesman")]
     public class SalesmanController : Controller
     {
