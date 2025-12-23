@@ -49,6 +49,7 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IBranchSevice,BranchService>();
 builder.Services.AddScoped<ISalesmanService, SalesmanService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<ITokenHandler, Kawerk.Application.Services.TokenHandler>();
 builder.Services.AddDbContext<DbBase>(options =>
 {
     options.UseSqlServer("Data Source=DESKTOP-OR6CO4J\\SQLEXPRESS;Initial Catalog=Kawerk;Integrated Security=True;Trust Server Certificate=True");//depends on your server!!!
