@@ -1,9 +1,10 @@
 name: Deploy Kawerk Backend
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: [".NET"]
+    types:
+      - completed
 
 jobs:
   deploy:
