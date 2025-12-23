@@ -52,8 +52,8 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<ITokenHandler, Kawerk.Application.Services.TokenHandler>();
 builder.Services.AddDbContext<DbBase>(options =>
 {
-    options.UseSqlServer("Data Source=DESKTOP-OR6CO4J\\SQLEXPRESS;Initial Catalog=Kawerk;Integrated Security=True;Trust Server Certificate=True");//depends on your server!!!
-    //options.UseSqlServer("Server=localhost,1433;Database=Kawerk;User Id=sa;Password=Gymapp_2025;Trust Server Certificate=True");
+    //options.UseSqlServer("Data Source=DESKTOP-OR6CO4J\\SQLEXPRESS;Initial Catalog=Kawerk;Integrated Security=True;Trust Server Certificate=True");//depends on your server!!!
+    options.UseSqlServer("Server=localhost,1433;Database=Kawerk;User Id=sa;Password=Gymapp_2025;Trust Server Certificate=True");
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).

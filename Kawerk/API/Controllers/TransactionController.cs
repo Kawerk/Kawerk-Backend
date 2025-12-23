@@ -1,13 +1,16 @@
 ﻿using Kawerk.Application.Interfaces;
 using Kawerk.Infastructure.DTOs.Transaction;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kawerk.API.Controllers
 {
+    [Authorize]
     [Route("api/vi/transaction")]
     public class TransactionController : Controller
     {
         private readonly ITransactionService _transactionService;
+
         public TransactionController(ITransactionService transactionService)
         {
             _transactionService = transactionService;
