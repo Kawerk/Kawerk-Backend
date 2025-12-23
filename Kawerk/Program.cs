@@ -52,7 +52,7 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<ITokenHandler, Kawerk.Application.Services.TokenHandler>();
 builder.Services.AddDbContext<DbBase>(options =>
 {
-    options.UseSqlServer(builder.Configuration["ConnectionStrings:LocalConnection"]);
+    options.UseSqlServer(builder.Configuration["ConnectionStrings:VpsConnection"]);
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
