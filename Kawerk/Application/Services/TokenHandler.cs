@@ -49,31 +49,35 @@ namespace Kawerk.Application.Services
 
             return await Task.FromResult(new JwtSecurityTokenHandler().WriteToken(TokenDescriptor));
         }
-        public Task<string> CreateRefreshToken(Guid CustomerID)//For creating new RefreshTokens
+        public string CreateRefreshToken()//For creating new RefreshTokens
         {
-
-            var refreshToken = new RefreshTokens
-            {
-                RefreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-                Expires = DateTime.Now.AddDays(4),
-                CustomerID = CustomerID,
-            };
-            return Task.FromResult(refreshToken.RefreshToken);
+            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
         }
         public async Task<string?> RefreshingToken(Guid CustomerID) //For logging in
         {
             var isTokenExists = (from token in _db.RefreshTokens
                                  where token.CustomerID == CustomerID
                                  select token).FirstOrDefault();
-            if (isTokenExists == null) return null;
+
+            string refreshToken = CreateRefreshToken();
+            if (isTokenExists == null)
+            {
+                RefreshTokens newToken = new RefreshTokens
+                {
+                    RefreshToken = refreshToken,
+                    CustomerID = CustomerID,
+                    Expires = DateTime.UtcNow.AddDays(4)
+                };
+                await _db.RefreshTokens.AddAsync(newToken);
+            }
             else
             {
                 isTokenExists.Expires = DateTime.UtcNow.AddDays(4);
-                isTokenExists.RefreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+                isTokenExists.RefreshToken = refreshToken;
                 _db.RefreshTokens.Update(isTokenExists);
-                await _db.SaveChangesAsync();
-                return await Task.FromResult(isTokenExists.RefreshToken);
             }
+            await _db.SaveChangesAsync();
+            return refreshToken;
         }
 
         //-----------------------------------------------------------------------

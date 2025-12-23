@@ -6,7 +6,6 @@ using Kawerk.Infastructure.DTOs.Manufacturer;
 using Kawerk.Infastructure.DTOs.Notification;
 using Kawerk.Infastructure.DTOs.Vehicle;
 using Kawerk.Infastructure.ResponseClasses;
-using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
