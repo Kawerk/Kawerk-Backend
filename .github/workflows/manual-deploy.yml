@@ -1,4 +1,4 @@
-name: Deploy Kawerk Backend
+name: Manual Deploy Kawerk Backend
 
 on:
   workflow_dispatch:
