@@ -52,8 +52,7 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<ITokenHandler, Kawerk.Application.Services.TokenHandler>();
 builder.Services.AddDbContext<DbBase>(options =>
 {
-    //options.UseSqlServer(builder.Configuration["ConnectionStrings:VpsConnection"]);
-    options.UseSqlServer("Server=localhost,1433;Database=Kawerk;User Id=sa;Password=Gymapp_2025;Trust Server Certificate=True");
+    options.UseSqlServer(builder.Configuration["ConnectionStrings:VpsConnection"]);
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
@@ -73,7 +72,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
 
         };
     });
-
+Console.WriteLine("Connection String = " + builder.Configuration["ConnectionStrings:VpsConnection"]);
 Console.WriteLine("Issuer = " + builder.Configuration["JwtSettings:Issuer"]);
 Console.WriteLine("Audience = " + builder.Configuration["JwtSettings:Audience"]);
 Console.WriteLine("Token = " + (builder.Configuration["JwtSettings:Token"] != null));
