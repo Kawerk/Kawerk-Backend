@@ -74,6 +74,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
         };
     });
 
+Console.WriteLine("Issuer = " + builder.Configuration["JwtSettings:Issuer"]);
+Console.WriteLine("Audience = " + builder.Configuration["JwtSettings:Audience"]);
+Console.WriteLine("Token = " + (builder.Configuration["JwtSettings:Token"] != null));
+
+
 builder.Services.ConfigureHttpJsonOptions(x =>
 {
     x.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
