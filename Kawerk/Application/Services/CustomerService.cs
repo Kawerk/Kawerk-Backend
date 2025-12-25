@@ -6,6 +6,7 @@ using Kawerk.Infastructure.DTOs.Manufacturer;
 using Kawerk.Infastructure.DTOs.Notification;
 using Kawerk.Infastructure.DTOs.Vehicle;
 using Kawerk.Infastructure.ResponseClasses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
@@ -17,11 +18,15 @@ namespace Kawerk.Application.Services
     {
         private readonly DbBase _db;
         private readonly ITokenHandler _tokenHandler;
+        private readonly ICurrentUserService _currentUserService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public CustomerService(DbBase db,ITokenHandler tokenHandler)
+        public CustomerService(DbBase db, ITokenHandler tokenHandler, ICurrentUserService currentUserService, IAuthorizationService authorizationService)
         {
             _db = db;
             _tokenHandler = tokenHandler;
+            _currentUserService = currentUserService;
+            _authorizationService = authorizationService;
         }
 
 
@@ -83,6 +88,11 @@ namespace Kawerk.Application.Services
             if (isCustomerExists == null)
                 return new SettersResponse { status = 0, msg = "Customer does not exist" };
 
+            //Authorization Check
+            var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User!, customerID, "SameUserAuth");
+            if(!authResult.Succeeded)
+                return new SettersResponse { status = 1, msg = "Unauthorized to update this customer." };
+
             // --***Updating***--
 
             //If the user wants to change their username, we must first check if the username is in use
@@ -114,7 +124,7 @@ namespace Kawerk.Application.Services
             //Saving to Database
             _db.Customers.Update(isCustomerExists);
             await _db.SaveChangesAsync();
-            return new SettersResponse { status = 1, msg = "Updated Successfully" };
+            return new SettersResponse { status = 2, msg = "Updated Successfully" };
         }
         public async Task<ResponseToken> Login(string email, string password)
         {
@@ -161,10 +171,15 @@ namespace Kawerk.Application.Services
             if (isCustomerExists == null)
                 return new SettersResponse { status = 0, msg = "Customer not found" };
 
+            //Authorization Check
+            var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User!, customerID, "SameUserAuth");
+            if (!authResult.Succeeded)
+                return new SettersResponse { status = 1, msg = "Unauthorized to delete this customer." };
+
             //Saving to Database
             _db.Customers.Remove(isCustomerExists);
             await _db.SaveChangesAsync();
-            return new SettersResponse { status = 1, msg = "Customer Deleted Successfully" };
+            return new SettersResponse { status = 2, msg = "Customer Deleted Successfully" };
         }
         public async Task<SettersResponse> BuyVehicle(Guid customerID, Guid vehicleID)
         {
@@ -175,6 +190,11 @@ namespace Kawerk.Application.Services
             var buyer = await _db.Customers.FindAsync(customerID);
             if (buyer == null)
                 return new SettersResponse { status = 0, msg = "Buyer not found." };
+
+            //Auth Check
+            var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User!, customerID, "SameUserAuth");
+            if (!authResult.Succeeded)
+                return new SettersResponse { status = 1, msg = "Unauthorized to buy vehicle for this customer." };
 
             var vehicle = await _db.Vehicles
                 .Include(v => v.Seller)
@@ -233,7 +253,7 @@ namespace Kawerk.Application.Services
                 await _db.SaveChangesAsync();
                 await tx.CommitAsync();
 
-                return new SettersResponse { status = 1, msg = "Purchase completed successfully." };
+                return new SettersResponse { status = 2, msg = "Purchase completed successfully." };
             }
             catch (Exception ex)
             {
@@ -249,6 +269,11 @@ namespace Kawerk.Application.Services
             var seller = await _db.Customers.FindAsync(sellerID);
             if (seller == null)
                 return new SettersResponse { status = 0, msg = "Seller not found." };
+
+            //Auth Check
+            var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User!, sellerID, "SameUserAuth");
+            if (!authResult.Succeeded)
+                return new SettersResponse { status = 1, msg = "Unauthorized to sell vehicle for this customer." };
 
             var vehicle = await _db.Vehicles.FirstOrDefaultAsync(v => v.VehicleID == vehicleID);
             if (vehicle == null)
@@ -274,7 +299,7 @@ namespace Kawerk.Application.Services
             _db.Vehicles.Update(vehicle);
             await _db.SaveChangesAsync();
 
-            return new SettersResponse { status = 1, msg = "Vehicle listed for sale successfully." };
+            return new SettersResponse { status = 2, msg = "Vehicle listed for sale successfully." };
         }
         public async Task<SettersResponse> Subscribe(Guid customerID, Guid manufacturerID)
         {
@@ -283,6 +308,12 @@ namespace Kawerk.Application.Services
                                         select c).FirstOrDefaultAsync();
             if (isCustomerExists == null)
                 return new SettersResponse { status = 0, msg = "Customer does not exist" };
+
+            //Auth Check
+            var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User!, customerID, "SameUserAuth");
+            if (!authResult.Succeeded)
+                return new SettersResponse { status = 1, msg = "Unauthorized to subscribe for this customer." };
+
             var isManufacturerExists = await (from m in _db.Manufacturers
                                                 where m.ManufacturerID == manufacturerID
                                                 select m).FirstOrDefaultAsync();
@@ -292,7 +323,7 @@ namespace Kawerk.Application.Services
             isManufacturerExists.Subscribers.Add(isCustomerExists);
             _db.Manufacturers.Update(isManufacturerExists);
             await _db.SaveChangesAsync();
-            return new SettersResponse { status = 1, msg = "Subscription successful" };
+            return new SettersResponse { status = 2, msg = "Subscription successful" };
         }
         //-----------------------------------------------------------------------
 

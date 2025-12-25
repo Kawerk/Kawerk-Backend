@@ -18,7 +18,7 @@ namespace Kawerk.API.Controllers
         {
             var result = await _customerService.CreateCustomer(customer);
 
-            if(result.status == 0)
+            if (result.status == 0)
                 return BadRequest(new { message = result.msg });
             else
                 return Ok(new { message = result.msg });
@@ -31,6 +31,8 @@ namespace Kawerk.API.Controllers
 
             if (result.status == 0)
                 return BadRequest(new { message = result.msg });
+            else if (result.status == 1)
+                return Forbid();
             else
                 return Ok(new { message = result.msg });
 
@@ -43,6 +45,8 @@ namespace Kawerk.API.Controllers
 
             if (result.status == 0)
                 return BadRequest(new { message = result.msg });
+            else if (result.status == 1)
+                return Forbid();
             else
                 return Ok(new { message = result.msg });
 

@@ -1,7 +1,9 @@
+using Kawerk.Application.Authorization;
 using Kawerk.Application.Interfaces;
 using Kawerk.Application.Services;
 using Kawerk.Infastructure.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -43,6 +45,7 @@ builder.Services.AddSwaggerGen(c => {
     });
 });
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IManufacturerService, ManufacturerService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
@@ -50,9 +53,12 @@ builder.Services.AddScoped<IBranchSevice,BranchService>();
 builder.Services.AddScoped<ISalesmanService, SalesmanService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<ITokenHandler, Kawerk.Application.Services.TokenHandler>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IAuthorizationHandler, SameUserHandler>();
+
 builder.Services.AddDbContext<DbBase>(options =>
 {
-    options.UseSqlServer(builder.Configuration["ConnectionStrings:VpsConnection"]);
+    options.UseSqlServer(builder.Configuration["ConnectionStrings:ModyConnection"]);
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
@@ -82,6 +88,12 @@ builder.Services.ConfigureHttpJsonOptions(x =>
 {
     x.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     x.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SameUserAuth", policy =>
+        policy.Requirements.Add(new SameUserRequirement(allowAdmins: true)));
 });
 
 var app = builder.Build();
