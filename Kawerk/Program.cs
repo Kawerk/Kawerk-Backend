@@ -53,7 +53,7 @@ builder.Services.AddScoped<ITokenHandler, Kawerk.Application.Services.TokenHandl
 builder.Services.AddDbContext<DbBase>(options =>
 {
     //options.UseSqlServer(builder.Configuration["ConnectionStrings:VpsConnection"]);
-    options.UseSqlServer(builder.Configuration.GetConnectionString("VpsConnection"));
+    options.UseSqlServer("Server=localhost,1433;Database=Kawerk;User Id=sa;Password=Gymapp_2025;Trust Server Certificate=True");
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
