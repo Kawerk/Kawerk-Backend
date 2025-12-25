@@ -53,7 +53,7 @@ builder.Services.AddScoped<ITokenHandler, Kawerk.Application.Services.TokenHandl
 builder.Services.AddDbContext<DbBase>(options =>
 {
     //options.UseSqlServer(builder.Configuration["ConnectionStrings:VpsConnection"]);
-    options.UseSqlServer("Server=localhost,1433;Database=Kawerk;User Id=sa;Password=Gymapp_2025;Trust Server Certificate=True");
+    options.UseSqlServer(builder.Configuration.GetConnectionString("VpsConnection"));
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
@@ -91,7 +91,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        // Log but don’t crash startup
+        // Log but donâ€™t crash startup
         Console.WriteLine($"Migration failed: {ex.Message}");
     }
 }
