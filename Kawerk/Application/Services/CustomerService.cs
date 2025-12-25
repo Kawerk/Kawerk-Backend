@@ -364,7 +364,7 @@ namespace Kawerk.Application.Services
         //-----------------------------------------------------------------------
 
         //        *********** Getters ***********
-        public async Task<PagedList<CustomerViewDTO>?> GetFilteredCustomers(string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
+        public async Task<GetterResponses<CustomerViewDTO>> GetFilteredCustomers(string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
         {
             IQueryable<Customer> customerQuery = _db.Customers;
             DateTime validStartDate, validEndDate;
@@ -386,8 +386,8 @@ namespace Kawerk.Application.Services
                 {
                     "name" or "n" => Customer => Customer.Name,
                     "email" or "e" => Customer => Customer.Email,
-                    "country" or "co" => Customer => Customer.Country,
-                    "city" or "ci" => Customer => Customer.City,
+                    "country" or "co" => Customer => Customer.Country!,
+                    "city" or "ci" => Customer => Customer.City!,
                     "createdat" or "ca" => Customer => Customer.CreatedAt,
                     _ => Customer => Customer.CustomerID,
                 };
@@ -406,36 +406,42 @@ namespace Kawerk.Application.Services
                 Phone = c.Phone,
                 ProfileUrl = c.ProfileUrl
             });
-            return await PagedList<CustomerViewDTO>.CreateAsync(customerResponse, page, pageSize);
+            var data = await PagedList<CustomerViewDTO>.CreateAsync(customerResponse, page, pageSize);
+            return new GetterResponses<CustomerViewDTO>
+            {
+                status = 1,
+                msg = "Customers retrieved successfully",
+                Data = data
+            };
         }
-        public async Task<PagedList<VehicleViewDTO>?> GetBoughtVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
+        public async Task<GetterResponses<VehicleViewDTO>> GetBoughtVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
         {
             var vehiclesQuery = (from v in _db.Vehicles
-                            where v.BuyerID == customerID
-                            select v);
+                                 where v.BuyerID == customerID
+                                 select v);
             DateTime validStartDate, validEndDate;
             if (DateTime.TryParse(startDate, out validStartDate))
             {
-                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate > validStartDate);
+                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction!.CreatedDate > validStartDate);
             }
             if (DateTime.TryParse(endDate, out validEndDate))
             {
-                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate < validEndDate);
+                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction!.CreatedDate < validEndDate);
             }
             if (!string.IsNullOrEmpty(searchTerm))
                 vehiclesQuery = vehiclesQuery.Where(u => u.Name.Contains(searchTerm) ||
-                u.Description.Contains(searchTerm) || u.Type.Contains(searchTerm) || u.FuelType.Contains(searchTerm));
+                u.Description!.Contains(searchTerm) || u.Type!.Contains(searchTerm) || u.FuelType!.Contains(searchTerm));
             if (!string.IsNullOrEmpty(sortColumn))
             {
                 Expression<Func<Vehicle, object>> keySelector = sortColumn.ToLower() switch // throws error when sortColumn is null
                 {
                     "name" or "n" => Vehicle => Vehicle.Name,
                     "price" or "p" => Vehicle => Vehicle.Price,
-                    "type" or "t" => Vehicle => Vehicle.Type,
-                    "enginecapacity" or "ec" => Vehicle => Vehicle.EngineCapacity,
-                    "fueltype" or "f" => Vehicle => Vehicle.FuelType,
-                    "seatingcapacity" or "sc" => Vehicle => Vehicle.SeatingCapacity,
-                    "status" or "s" => Vehicle => Vehicle.Status,
+                    "type" or "t" => Vehicle => Vehicle.Type!,
+                    "enginecapacity" or "ec" => Vehicle => Vehicle.EngineCapacity!,
+                    "fueltype" or "f" => Vehicle => Vehicle.FuelType!,
+                    "seatingcapacity" or "sc" => Vehicle => Vehicle.SeatingCapacity!,
+                    "status" or "s" => Vehicle => Vehicle.Status!,
                     _ => Vehicle => Vehicle.VehicleID,
                 };
                 if (!string.IsNullOrEmpty(OrderBy)) vehiclesQuery = vehiclesQuery.OrderBy(keySelector);
@@ -459,9 +465,15 @@ namespace Kawerk.Application.Services
                                     });
 
 
-            return await PagedList<VehicleViewDTO>.CreateAsync(vehiclesResponse, page, pageSize);
+            var data = await PagedList<VehicleViewDTO>.CreateAsync(vehiclesResponse, page, pageSize);
+            return new GetterResponses<VehicleViewDTO>
+            {
+                status = 1,
+                msg = "Vehicles retrieved successfully",
+                Data = data
+            };
         }
-        public async Task<PagedList<VehicleSellerViewDTO>?> GetSoldVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
+        public async Task<GetterResponses<VehicleSellerViewDTO>> GetSoldVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
         {
             var vehiclesQuery = (from v in _db.Vehicles
                             where v.SellerID == customerID
@@ -513,7 +525,13 @@ namespace Kawerk.Application.Services
                                     });
 
 
-            return await PagedList<VehicleSellerViewDTO>.CreateAsync(vehiclesResponse, page, pageSize);
+            var data = await PagedList<VehicleSellerViewDTO>.CreateAsync(vehiclesResponse, page, pageSize);
+            return new GetterResponses<VehicleSellerViewDTO>
+            {
+                status = 1,
+                msg = "Vehicles retrieved successfully",
+                Data = data
+            };
         }
         public async Task<CustomerViewDTO?> GetCustomer(Guid customerID)
         {
@@ -535,11 +553,16 @@ namespace Kawerk.Application.Services
             //Returning Customer
             return customer;
         }
-        public async Task<PagedList<ManufacturerViewDTO>?> GetSubscribedManufacturers(Guid customerID, int page, int pageSize)
+        public async Task<GetterResponses<ManufacturerViewDTO>> GetSubscribedManufacturers(Guid customerID, int page, int pageSize)
         {
             var isCustomerExists = await _db.Customers.AnyAsync(c => c.CustomerID == customerID);
             if (!isCustomerExists) 
-                return null;
+                return new GetterResponses<ManufacturerViewDTO>
+                {
+                    status = 0,
+                    msg = "Customer not found",
+                    Data = null
+                };
 
             var manufacturersQuery = _db.Customers
                                     .Where(c => c.CustomerID == customerID)
@@ -552,13 +575,24 @@ namespace Kawerk.Application.Services
                                         Type = m.Type
                                     });
 
-            return await PagedList<ManufacturerViewDTO>.CreateAsync(manufacturersQuery, page, pageSize);
+            var data = await PagedList<ManufacturerViewDTO>.CreateAsync(manufacturersQuery, page, pageSize);
+            return new GetterResponses<ManufacturerViewDTO>
+            {
+                status = 1,
+                msg = "Subscribed manufacturers retrieved successfully",
+                Data = data
+            };
         }
-        public async Task<PagedList<NotificationViewDTO>?> GetNotifications(Guid customerID, int page, int pageSize)
+        public async Task<GetterResponses<NotificationViewDTO>> GetNotifications(Guid customerID, int page, int pageSize)
         {
             var isCustomerExists = await _db.Customers.AnyAsync(c => c.CustomerID == customerID);
-            if (!isCustomerExists) 
-                return null;
+            if (!isCustomerExists)
+                return new GetterResponses<NotificationViewDTO>
+                {
+                    status = 0,
+                    msg = "Customer not found",
+                    Data = null
+                };
 
             var notificationsQuery = _db.Notifications
                                         .Where(n => n.CustomerID == customerID)
@@ -570,9 +604,15 @@ namespace Kawerk.Application.Services
                                             CreatedAt = n.CreatedAt
                                         });
 
-            return await PagedList<NotificationViewDTO>.CreateAsync(notificationsQuery, page, pageSize);
+            var data = await PagedList<NotificationViewDTO>.CreateAsync(notificationsQuery, page, pageSize);
+            return new GetterResponses<NotificationViewDTO>
+            {
+                status = 1,
+                msg = "Notifications retrieved successfully",
+                Data = data
+            };
         }
-        public async Task<PagedList<CustomerViewDTO>?> GetCustomers(int page,int pageSize)
+        public async Task<GetterResponses<CustomerViewDTO>> GetCustomers(int page,int pageSize)
         {
             //Getting customers from Database and projecting to CustomerDTO
             var customersQuery = from c in _db.Customers
@@ -588,7 +628,13 @@ namespace Kawerk.Application.Services
                                      ProfileUrl = c.ProfileUrl
                                  };
 
-            return await PagedList<CustomerViewDTO>.CreateAsync(customersQuery, page, pageSize);
+            var data = await PagedList<CustomerViewDTO>.CreateAsync(customersQuery, page, pageSize);
+            return new GetterResponses<CustomerViewDTO>
+            {
+                status = 1,
+                msg = "Customers retrieved successfully",
+                Data = data
+            };
         }
         
     }
