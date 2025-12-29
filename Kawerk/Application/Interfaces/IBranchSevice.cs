@@ -9,6 +9,7 @@ namespace Kawerk.Application.Interfaces
         public Task<SettersResponse> CreateBranch(BranchCreationDTO branch);
         public Task<SettersResponse> UpdateBranch(Guid branchID,BranchUpdateDTO branch);
         public Task<SettersResponse> DeleteBranch(Guid branchID);
+        public Task<SettersResponse> AssignManager(Guid branchID, Guid customerID);
         public Task<SettersResponse> AddSalesman(Guid branchID,Guid salesmanID);
         public Task<SettersResponse> RemoveSalesman(Guid branchID,Guid salesmanID);
         public Task<BranchViewDTO?> GetBranch(Guid branchID);

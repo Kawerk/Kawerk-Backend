@@ -44,6 +44,18 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
+        [Authorize(Policy ="AdminPolicy")]
+        [HttpPut("assign-manager/{branchID}/{managerID}")]
+        public async Task<IActionResult> AssignManagerToBranch([FromRoute]Guid branchID, [FromRoute]Guid managerID)
+        {
+            var result = await _branchService.AssignManager(branchID, managerID);
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
+            else if(result.status == 1)
+                return Forbid();
+            else
+                return Ok(new { message = result.msg });
+        }
         [Authorize(Policy ="BranchPolicy")]
         [HttpPost("add-salesman/{branchID}/{salesmanID}")]
         public async Task<IActionResult> AddSalesmanToBranch([FromRoute]Guid branchID, [FromRoute]Guid salesmanID)
@@ -51,6 +63,8 @@ namespace Kawerk.API.Controllers
             var result = await _branchService.AddSalesman(branchID, salesmanID);
             if (result.status == 0)
                 return BadRequest(new { message = result.msg });
+            else if(result.status == 1)
+                return Forbid();
             else
                 return Ok(new { message = result.msg });
         }
@@ -61,6 +75,8 @@ namespace Kawerk.API.Controllers
             var result = await _branchService.RemoveSalesman(branchID, salesmanID);
             if (result.status == 0)
                 return BadRequest(new { message = result.msg });
+            else if(result.status == 1)
+                return Forbid();
             else
                 return Ok(new { message = result.msg });
         }

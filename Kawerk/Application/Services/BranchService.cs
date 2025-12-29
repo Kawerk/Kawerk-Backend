@@ -4,6 +4,7 @@ using Kawerk.Infastructure.Context;
 using Kawerk.Infastructure.DTOs.Branch;
 using Kawerk.Infastructure.DTOs.Salesman;
 using Kawerk.Infastructure.ResponseClasses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -12,9 +13,13 @@ namespace Kawerk.Application.Services
     public class BranchService : IBranchSevice
     {
         private readonly DbBase _db;
-        public BranchService(DbBase db)
+        private readonly ICurrentUserService _currentUserService;
+        private readonly IAuthorizationService _authorizationService;
+        public BranchService(DbBase db, ICurrentUserService currentUserService, IAuthorizationService authorizationService)
         {
             _db = db;
+            _currentUserService = currentUserService;
+            _authorizationService = authorizationService;
         }
 
         //        *********** Setters ***********
@@ -111,6 +116,47 @@ namespace Kawerk.Application.Services
             await _db.SaveChangesAsync();
             return new SettersResponse { status = 1, msg = "Branch deleted successfully" };
         }
+        public async Task<SettersResponse> AssignManager(Guid branchID, Guid customerID)
+        {
+            //Checking ID validity
+            if (branchID == Guid.Empty || customerID == Guid.Empty)
+                return new SettersResponse { status = 0, msg = "Faulty ID" };
+            //Getting branch from Database
+            var isBranchExisting = await (from b in _db.Branches.Include(b => b.BranchManager)
+                                          where b.BranchID == branchID
+                                          select b).FirstOrDefaultAsync();
+            //if branch not found return
+            if (isBranchExisting == null)
+                return new SettersResponse { status = 0, msg = "Branch not found" };
+            //Getting customer from Database
+            var isCustomerExisting = await (from c in _db.Customers
+                                            where c.CustomerID == customerID
+                                            select c).FirstOrDefaultAsync();
+            //if customer not found return
+            if (isCustomerExisting == null)
+                return new SettersResponse { status = 0, msg = "Customer not found" };
+
+            bool hasManager = false;
+            //Checking if branch already has a manager
+            if (isBranchExisting.BranchManager != null)
+            {
+               hasManager = true;
+            }
+            //Assigning manager to branch
+            isBranchExisting.BranchManager = isCustomerExisting;
+            _db.Branches.Update(isBranchExisting);
+            await _db.SaveChangesAsync();
+            if(isCustomerExisting.Role != "BranchManager")
+            {
+                isCustomerExisting.Role = "BranchManager";
+                _db.Customers.Update(isCustomerExisting);
+                await _db.SaveChangesAsync();
+            }
+            if(hasManager)
+                return new SettersResponse { status = 2, msg = "Branch manager reassigned successfully" };
+            else
+                return new SettersResponse { status = 2, msg = "Manager assigned to branch successfully" };
+        }
         public async Task<SettersResponse> AddSalesman(Guid branchID, Guid salesmanID)
         {
             //Checking ID validity
@@ -118,13 +164,22 @@ namespace Kawerk.Application.Services
                 return new SettersResponse { status = 0, msg = "Faulty ID" };
 
             //Getting branch from Database
-            var isBranchExisting = await (from b in _db.Branches.Include(b => b.Salesmen)
+            var isBranchExisting = await (from b in _db.Branches.Include(b => b.Salesmen).Include(b=>b.BranchManager)
                                           where b.BranchID == branchID
                                           select b).FirstOrDefaultAsync();
             //if branch not found return
             if (isBranchExisting == null)
                 return new SettersResponse { status = 0, msg = "Branch not found" };
 
+            //Checking if branch has a manager assigned
+            if (isBranchExisting.BranchManager == null)
+                return new SettersResponse { status = 0, msg = "Branch has no manager assigned" };
+            
+            //Authorization Check
+            var accessingUser = _currentUserService.User;
+            var authorizationResult = await _authorizationService.AuthorizeAsync(accessingUser!, isBranchExisting.BranchManager.CustomerID, "SameUserAuth");
+            if(!authorizationResult.Succeeded)
+                return new SettersResponse { status = 1, msg = "You are not authorized to add salesmen to this branch" };
             //Getting salesman from Database
             var isSalesmanExisting = await (from s in _db.Salesman
                                             where s.SalesmanID == salesmanID
@@ -141,7 +196,7 @@ namespace Kawerk.Application.Services
             isBranchExisting.Salesmen.Add(isSalesmanExisting);
             _db.Branches.Update(isBranchExisting);
             await _db.SaveChangesAsync();
-            return new SettersResponse { status = 1, msg = "Salesman added to branch successfully" };
+            return new SettersResponse { status = 2, msg = "Salesman added to branch successfully" };
         }
         public async Task<SettersResponse> RemoveSalesman(Guid branchID, Guid salesmanID)
         {
@@ -150,12 +205,20 @@ namespace Kawerk.Application.Services
                 return new SettersResponse { status = 0, msg = "Faulty ID" };
 
             //Getting branch from Database
-            var isBranchExisting = await (from b in _db.Branches.Include(b => b.Salesmen)
+            var isBranchExisting = await (from b in _db.Branches.Include(b => b.Salesmen).Include(b => b.BranchManager)
                                           where b.BranchID == branchID
                                           select b).FirstOrDefaultAsync();
             //if branch not found return
             if (isBranchExisting == null)
                 return new SettersResponse { status = 0, msg = "Branch not found" };
+
+            if(isBranchExisting.BranchManager == null)
+                return new SettersResponse { status = 0, msg = "Branch has no manager assigned" };
+            //Authorization Check
+            var accessingUser = _currentUserService.User;
+            var authorizationResult = await _authorizationService.AuthorizeAsync(accessingUser!, isBranchExisting.BranchManager.CustomerID, "SameUserAuth");
+            if (!authorizationResult.Succeeded)
+                return new SettersResponse { status = 1, msg = "You are not authorized to remove salesmen from this branch" };
 
             //Getting salesman from Database
             var isSalesmanExisting = await (from s in _db.Salesman
