@@ -95,6 +95,31 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("SameUserAuth", policy =>
         policy.Requirements.Add(new SameUserRequirement(allowAdmins: true)));
 });
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SalesmanPolicy", policy =>
+        policy.RequireRole("Salesman", "BranchManager", "ManufacturerAdministrator", "Admin"));
+});
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("BranchPolicy", policy =>
+        policy.RequireRole("BranchManager","Admin"));
+});
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ManufacturerPolicy", policy =>
+        policy.RequireRole("ManufacturerAdministrator", "Admin"));
+});
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AllPolicy", policy =>
+        policy.RequireRole("Customer","Salesman", "BranchManager", "ManufacturerAdministrator", "Admin"));
+});
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminPolicy", policy =>
+        policy.RequireRole("Admin"));
+});
 
 var app = builder.Build();
 

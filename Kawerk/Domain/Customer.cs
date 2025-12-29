@@ -33,11 +33,13 @@ namespace Kawerk.Domain
 
         //Relationships
         public RefreshTokens? RefreshToken { get; set; } 
-        public List<Vehicle> VehiclesBought { get; set; } = new List<Vehicle>();
-        public List<Vehicle> VehiclesSold { get; set; } = new List<Vehicle>();
-        public List<Transaction> Purchases { get; set; } = new List<Transaction>();
-        public List<Transaction> Sells { get; set; } = new List<Transaction>();
-        public List<Manufacturer> SubscribedManufacturers { get; set; } = new List<Manufacturer>();
-        public List<Notification> Notifications { get; set; } = new List<Notification>();
+        public List<Vehicle>? VehiclesBought { get; set; }
+        public List<Vehicle>? VehiclesSold { get; set; }
+        public List<Transaction>? Purchases { get; set; }
+        public List<Transaction>? Sells { get; set; }
+        public List<Manufacturer>? SubscribedManufacturers { get; set; }
+        public List<Notification>? Notifications { get; set; }
+        public List<Branches>? ManagedBranches { get; set; }
+        public Manufacturer? ManagedManufacturer { get; set; }
     }
 }

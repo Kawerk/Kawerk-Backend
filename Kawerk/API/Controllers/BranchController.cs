@@ -14,6 +14,7 @@ namespace Kawerk.API.Controllers
         {
             _branchService = branchService;
         }
+        [Authorize(Policy ="AdminPolicy")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateBranch([FromBody]BranchCreationDTO branch)
         {
@@ -23,6 +24,7 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
+        [Authorize(Policy ="BranchPolicy")]
         [HttpPut("update/{branchID}")]
         public async Task<IActionResult> UpdateBranch([FromRoute]Guid branchID,[FromBody] BranchUpdateDTO branch)
         {
@@ -32,6 +34,7 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
+        [Authorize(Policy ="AdminPolicy")]
         [HttpDelete("delete/{branchID}")]
         public async Task<IActionResult> DeleteBranch([FromRoute]Guid branchID)
         {
@@ -41,6 +44,7 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
+        [Authorize(Policy ="BranchPolicy")]
         [HttpPost("add-salesman/{branchID}/{salesmanID}")]
         public async Task<IActionResult> AddSalesmanToBranch([FromRoute]Guid branchID, [FromRoute]Guid salesmanID)
         {
@@ -50,6 +54,7 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
+        [Authorize(Policy = "BranchPolicy")]
         [HttpDelete("remove-salesman/{branchID}/{salesmanID}")]
         public async Task<IActionResult> RemoveSalesmanFromBranch([FromRoute]Guid branchID, [FromRoute]Guid salesmanID)
         {

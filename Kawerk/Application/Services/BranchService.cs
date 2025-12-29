@@ -4,10 +4,7 @@ using Kawerk.Infastructure.Context;
 using Kawerk.Infastructure.DTOs.Branch;
 using Kawerk.Infastructure.DTOs.Salesman;
 using Kawerk.Infastructure.ResponseClasses;
-using Microsoft.AspNet.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 
 namespace Kawerk.Application.Services

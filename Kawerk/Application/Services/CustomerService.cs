@@ -31,7 +31,7 @@ namespace Kawerk.Application.Services
 
 
         //        *********** Setters ***********
-        public async Task<ResponseToken> CreateCustomer(CustomerCreationDTO customer)//0 == Faulty DTO || 1 == Invalid Email || 2 == Invalid Password || 3 == Customer already Exists || 4 == Customer created Succesfully
+        public async Task<ResponseToken> CreateCustomer(CustomerCreationDTO customer)
         {
             //Checking customerDTO validity
             if(customer == null)
@@ -74,7 +74,7 @@ namespace Kawerk.Application.Services
                 RefreshToken = RefreshToken,
                 msg = "Customer created successfully" };
         }
-        public async Task<SettersResponse> UpdateCustomer(Guid customerID,CustomerUpdateDTO customer)//0 == Faulty DTO || 1 == Customer does not exist  || 2 == username is already used || 3 == Updated Successful
+        public async Task<SettersResponse> UpdateCustomer(Guid customerID,CustomerUpdateDTO customer)
         {
             //Checking DTO validity
             if (customer == null)
