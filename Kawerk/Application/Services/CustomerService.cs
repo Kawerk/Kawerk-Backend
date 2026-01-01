@@ -6,6 +6,7 @@ using Kawerk.Infastructure.DTOs.Manufacturer;
 using Kawerk.Infastructure.DTOs.Notification;
 using Kawerk.Infastructure.DTOs.Vehicle;
 using Kawerk.Infastructure.ResponseClasses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
@@ -17,16 +18,20 @@ namespace Kawerk.Application.Services
     {
         private readonly DbBase _db;
         private readonly ITokenHandler _tokenHandler;
+        private readonly ICurrentUserService _currentUserService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public CustomerService(DbBase db,ITokenHandler tokenHandler)
+        public CustomerService(DbBase db, ITokenHandler tokenHandler, ICurrentUserService currentUserService, IAuthorizationService authorizationService)
         {
             _db = db;
             _tokenHandler = tokenHandler;
+            _currentUserService = currentUserService;
+            _authorizationService = authorizationService;
         }
 
 
         //        *********** Setters ***********
-        public async Task<ResponseToken> CreateCustomer(CustomerCreationDTO customer)//0 == Faulty DTO || 1 == Invalid Email || 2 == Invalid Password || 3 == Customer already Exists || 4 == Customer created Succesfully
+        public async Task<ResponseToken> CreateCustomer(CustomerCreationDTO customer)
         {
             //Checking customerDTO validity
             if(customer == null)
@@ -69,7 +74,7 @@ namespace Kawerk.Application.Services
                 RefreshToken = RefreshToken,
                 msg = "Customer created successfully" };
         }
-        public async Task<SettersResponse> UpdateCustomer(Guid customerID,CustomerUpdateDTO customer)//0 == Faulty DTO || 1 == Customer does not exist  || 2 == username is already used || 3 == Updated Successful
+        public async Task<SettersResponse> UpdateCustomer(Guid customerID,CustomerUpdateDTO customer)
         {
             //Checking DTO validity
             if (customer == null)
@@ -82,6 +87,11 @@ namespace Kawerk.Application.Services
             //If User does not exist return
             if (isCustomerExists == null)
                 return new SettersResponse { status = 0, msg = "Customer does not exist" };
+
+            //Authorization Check
+            var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User!, customerID, "SameUserAuth");
+            if(!authResult.Succeeded)
+                return new SettersResponse { status = 1, msg = "Unauthorized to update this customer." };
 
             // --***Updating***--
 
@@ -114,7 +124,7 @@ namespace Kawerk.Application.Services
             //Saving to Database
             _db.Customers.Update(isCustomerExists);
             await _db.SaveChangesAsync();
-            return new SettersResponse { status = 1, msg = "Updated Successfully" };
+            return new SettersResponse { status = 2, msg = "Updated Successfully" };
         }
         public async Task<ResponseToken> Login(string email, string password)
         {
@@ -161,10 +171,15 @@ namespace Kawerk.Application.Services
             if (isCustomerExists == null)
                 return new SettersResponse { status = 0, msg = "Customer not found" };
 
+            //Authorization Check
+            var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User!, customerID, "SameUserAuth");
+            if (!authResult.Succeeded)
+                return new SettersResponse { status = 1, msg = "Unauthorized to delete this customer." };
+
             //Saving to Database
             _db.Customers.Remove(isCustomerExists);
             await _db.SaveChangesAsync();
-            return new SettersResponse { status = 1, msg = "Customer Deleted Successfully" };
+            return new SettersResponse { status = 2, msg = "Customer Deleted Successfully" };
         }
         public async Task<SettersResponse> BuyVehicle(Guid customerID, Guid vehicleID)
         {
@@ -175,6 +190,11 @@ namespace Kawerk.Application.Services
             var buyer = await _db.Customers.FindAsync(customerID);
             if (buyer == null)
                 return new SettersResponse { status = 0, msg = "Buyer not found." };
+
+            //Auth Check
+            var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User!, customerID, "SameUserAuth");
+            if (!authResult.Succeeded)
+                return new SettersResponse { status = 1, msg = "Unauthorized to buy vehicle for this customer." };
 
             var vehicle = await _db.Vehicles
                 .Include(v => v.Seller)
@@ -233,7 +253,7 @@ namespace Kawerk.Application.Services
                 await _db.SaveChangesAsync();
                 await tx.CommitAsync();
 
-                return new SettersResponse { status = 1, msg = "Purchase completed successfully." };
+                return new SettersResponse { status = 2, msg = "Purchase completed successfully." };
             }
             catch (Exception ex)
             {
@@ -249,6 +269,11 @@ namespace Kawerk.Application.Services
             var seller = await _db.Customers.FindAsync(sellerID);
             if (seller == null)
                 return new SettersResponse { status = 0, msg = "Seller not found." };
+
+            //Auth Check
+            var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User!, sellerID, "SameUserAuth");
+            if (!authResult.Succeeded)
+                return new SettersResponse { status = 1, msg = "Unauthorized to sell vehicle for this customer." };
 
             var vehicle = await _db.Vehicles.FirstOrDefaultAsync(v => v.VehicleID == vehicleID);
             if (vehicle == null)
@@ -274,7 +299,7 @@ namespace Kawerk.Application.Services
             _db.Vehicles.Update(vehicle);
             await _db.SaveChangesAsync();
 
-            return new SettersResponse { status = 1, msg = "Vehicle listed for sale successfully." };
+            return new SettersResponse { status = 2, msg = "Vehicle listed for sale successfully." };
         }
         public async Task<SettersResponse> Subscribe(Guid customerID, Guid manufacturerID)
         {
@@ -283,6 +308,12 @@ namespace Kawerk.Application.Services
                                         select c).FirstOrDefaultAsync();
             if (isCustomerExists == null)
                 return new SettersResponse { status = 0, msg = "Customer does not exist" };
+
+            //Auth Check
+            var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User!, customerID, "SameUserAuth");
+            if (!authResult.Succeeded)
+                return new SettersResponse { status = 1, msg = "Unauthorized to subscribe for this customer." };
+
             var isManufacturerExists = await (from m in _db.Manufacturers
                                                 where m.ManufacturerID == manufacturerID
                                                 select m).FirstOrDefaultAsync();
@@ -292,7 +323,7 @@ namespace Kawerk.Application.Services
             isManufacturerExists.Subscribers.Add(isCustomerExists);
             _db.Manufacturers.Update(isManufacturerExists);
             await _db.SaveChangesAsync();
-            return new SettersResponse { status = 1, msg = "Subscription successful" };
+            return new SettersResponse { status = 2, msg = "Subscription successful" };
         }
         //-----------------------------------------------------------------------
 
@@ -333,7 +364,7 @@ namespace Kawerk.Application.Services
         //-----------------------------------------------------------------------
 
         //        *********** Getters ***********
-        public async Task<PagedList<CustomerViewDTO>?> GetFilteredCustomers(string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
+        public async Task<GetterResponses<CustomerViewDTO>> GetFilteredCustomers(string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
         {
             IQueryable<Customer> customerQuery = _db.Customers;
             DateTime validStartDate, validEndDate;
@@ -355,8 +386,8 @@ namespace Kawerk.Application.Services
                 {
                     "name" or "n" => Customer => Customer.Name,
                     "email" or "e" => Customer => Customer.Email,
-                    "country" or "co" => Customer => Customer.Country,
-                    "city" or "ci" => Customer => Customer.City,
+                    "country" or "co" => Customer => Customer.Country!,
+                    "city" or "ci" => Customer => Customer.City!,
                     "createdat" or "ca" => Customer => Customer.CreatedAt,
                     _ => Customer => Customer.CustomerID,
                 };
@@ -375,36 +406,42 @@ namespace Kawerk.Application.Services
                 Phone = c.Phone,
                 ProfileUrl = c.ProfileUrl
             });
-            return await PagedList<CustomerViewDTO>.CreateAsync(customerResponse, page, pageSize);
+            var data = await PagedList<CustomerViewDTO>.CreateAsync(customerResponse, page, pageSize);
+            return new GetterResponses<CustomerViewDTO>
+            {
+                status = 1,
+                msg = "Customers retrieved successfully",
+                Data = data
+            };
         }
-        public async Task<PagedList<VehicleViewDTO>?> GetBoughtVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
+        public async Task<GetterResponses<VehicleViewDTO>> GetBoughtVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
         {
             var vehiclesQuery = (from v in _db.Vehicles
-                            where v.BuyerID == customerID
-                            select v);
+                                 where v.BuyerID == customerID
+                                 select v);
             DateTime validStartDate, validEndDate;
             if (DateTime.TryParse(startDate, out validStartDate))
             {
-                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate > validStartDate);
+                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction!.CreatedDate > validStartDate);
             }
             if (DateTime.TryParse(endDate, out validEndDate))
             {
-                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate < validEndDate);
+                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction!.CreatedDate < validEndDate);
             }
             if (!string.IsNullOrEmpty(searchTerm))
                 vehiclesQuery = vehiclesQuery.Where(u => u.Name.Contains(searchTerm) ||
-                u.Description.Contains(searchTerm) || u.Type.Contains(searchTerm) || u.FuelType.Contains(searchTerm));
+                u.Description!.Contains(searchTerm) || u.Type!.Contains(searchTerm) || u.FuelType!.Contains(searchTerm));
             if (!string.IsNullOrEmpty(sortColumn))
             {
                 Expression<Func<Vehicle, object>> keySelector = sortColumn.ToLower() switch // throws error when sortColumn is null
                 {
                     "name" or "n" => Vehicle => Vehicle.Name,
                     "price" or "p" => Vehicle => Vehicle.Price,
-                    "type" or "t" => Vehicle => Vehicle.Type,
-                    "enginecapacity" or "ec" => Vehicle => Vehicle.EngineCapacity,
-                    "fueltype" or "f" => Vehicle => Vehicle.FuelType,
-                    "seatingcapacity" or "sc" => Vehicle => Vehicle.SeatingCapacity,
-                    "status" or "s" => Vehicle => Vehicle.Status,
+                    "type" or "t" => Vehicle => Vehicle.Type!,
+                    "enginecapacity" or "ec" => Vehicle => Vehicle.EngineCapacity!,
+                    "fueltype" or "f" => Vehicle => Vehicle.FuelType!,
+                    "seatingcapacity" or "sc" => Vehicle => Vehicle.SeatingCapacity!,
+                    "status" or "s" => Vehicle => Vehicle.Status!,
                     _ => Vehicle => Vehicle.VehicleID,
                 };
                 if (!string.IsNullOrEmpty(OrderBy)) vehiclesQuery = vehiclesQuery.OrderBy(keySelector);
@@ -428,9 +465,15 @@ namespace Kawerk.Application.Services
                                     });
 
 
-            return await PagedList<VehicleViewDTO>.CreateAsync(vehiclesResponse, page, pageSize);
+            var data = await PagedList<VehicleViewDTO>.CreateAsync(vehiclesResponse, page, pageSize);
+            return new GetterResponses<VehicleViewDTO>
+            {
+                status = 1,
+                msg = "Vehicles retrieved successfully",
+                Data = data
+            };
         }
-        public async Task<PagedList<VehicleSellerViewDTO>?> GetSoldVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
+        public async Task<GetterResponses<VehicleSellerViewDTO>> GetSoldVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize)
         {
             var vehiclesQuery = (from v in _db.Vehicles
                             where v.SellerID == customerID
@@ -482,7 +525,13 @@ namespace Kawerk.Application.Services
                                     });
 
 
-            return await PagedList<VehicleSellerViewDTO>.CreateAsync(vehiclesResponse, page, pageSize);
+            var data = await PagedList<VehicleSellerViewDTO>.CreateAsync(vehiclesResponse, page, pageSize);
+            return new GetterResponses<VehicleSellerViewDTO>
+            {
+                status = 1,
+                msg = "Vehicles retrieved successfully",
+                Data = data
+            };
         }
         public async Task<CustomerViewDTO?> GetCustomer(Guid customerID)
         {
@@ -504,11 +553,16 @@ namespace Kawerk.Application.Services
             //Returning Customer
             return customer;
         }
-        public async Task<PagedList<ManufacturerViewDTO>?> GetSubscribedManufacturers(Guid customerID, int page, int pageSize)
+        public async Task<GetterResponses<ManufacturerViewDTO>> GetSubscribedManufacturers(Guid customerID, int page, int pageSize)
         {
             var isCustomerExists = await _db.Customers.AnyAsync(c => c.CustomerID == customerID);
             if (!isCustomerExists) 
-                return null;
+                return new GetterResponses<ManufacturerViewDTO>
+                {
+                    status = 0,
+                    msg = "Customer not found",
+                    Data = null
+                };
 
             var manufacturersQuery = _db.Customers
                                     .Where(c => c.CustomerID == customerID)
@@ -521,13 +575,24 @@ namespace Kawerk.Application.Services
                                         Type = m.Type
                                     });
 
-            return await PagedList<ManufacturerViewDTO>.CreateAsync(manufacturersQuery, page, pageSize);
+            var data = await PagedList<ManufacturerViewDTO>.CreateAsync(manufacturersQuery, page, pageSize);
+            return new GetterResponses<ManufacturerViewDTO>
+            {
+                status = 1,
+                msg = "Subscribed manufacturers retrieved successfully",
+                Data = data
+            };
         }
-        public async Task<PagedList<NotificationViewDTO>?> GetNotifications(Guid customerID, int page, int pageSize)
+        public async Task<GetterResponses<NotificationViewDTO>> GetNotifications(Guid customerID, int page, int pageSize)
         {
             var isCustomerExists = await _db.Customers.AnyAsync(c => c.CustomerID == customerID);
-            if (!isCustomerExists) 
-                return null;
+            if (!isCustomerExists)
+                return new GetterResponses<NotificationViewDTO>
+                {
+                    status = 0,
+                    msg = "Customer not found",
+                    Data = null
+                };
 
             var notificationsQuery = _db.Notifications
                                         .Where(n => n.CustomerID == customerID)
@@ -539,9 +604,15 @@ namespace Kawerk.Application.Services
                                             CreatedAt = n.CreatedAt
                                         });
 
-            return await PagedList<NotificationViewDTO>.CreateAsync(notificationsQuery, page, pageSize);
+            var data = await PagedList<NotificationViewDTO>.CreateAsync(notificationsQuery, page, pageSize);
+            return new GetterResponses<NotificationViewDTO>
+            {
+                status = 1,
+                msg = "Notifications retrieved successfully",
+                Data = data
+            };
         }
-        public async Task<PagedList<CustomerViewDTO>?> GetCustomers(int page,int pageSize)
+        public async Task<GetterResponses<CustomerViewDTO>> GetCustomers(int page,int pageSize)
         {
             //Getting customers from Database and projecting to CustomerDTO
             var customersQuery = from c in _db.Customers
@@ -557,7 +628,13 @@ namespace Kawerk.Application.Services
                                      ProfileUrl = c.ProfileUrl
                                  };
 
-            return await PagedList<CustomerViewDTO>.CreateAsync(customersQuery, page, pageSize);
+            var data = await PagedList<CustomerViewDTO>.CreateAsync(customersQuery, page, pageSize);
+            return new GetterResponses<CustomerViewDTO>
+            {
+                status = 1,
+                msg = "Customers retrieved successfully",
+                Data = data
+            };
         }
         
     }

@@ -16,11 +16,11 @@ namespace Kawerk.Application.Interfaces
         public Task<SettersResponse> SellVehicle(Guid sellerID, Guid vehicleID);
         public Task<SettersResponse> Subscribe(Guid customerID, Guid manufacturerID);
         public Task<CustomerViewDTO?> GetCustomer(Guid customerID);
-        public Task<PagedList<CustomerViewDTO>?> GetFilteredCustomers(string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize);
-        public Task<PagedList<VehicleViewDTO>?> GetBoughtVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize);
-        public Task<PagedList<VehicleSellerViewDTO>?> GetSoldVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize);
-        public Task<PagedList<ManufacturerViewDTO>?> GetSubscribedManufacturers(Guid customerID, int page, int pageSize);
-        public Task<PagedList<NotificationViewDTO>?> GetNotifications(Guid customerID, int page, int pageSize);
-        public Task<PagedList<CustomerViewDTO>?> GetCustomers(int page,int pageSize);
+        public Task<GetterResponses<CustomerViewDTO>> GetFilteredCustomers(string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize);
+        public Task<GetterResponses<VehicleViewDTO>> GetBoughtVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize);
+        public Task<GetterResponses<VehicleSellerViewDTO>> GetSoldVehicles(Guid customerID, string startDate, string endDate, int page, string sortColumn, string OrderBy, string searchTerm, int pageSize);
+        public Task<GetterResponses<ManufacturerViewDTO>> GetSubscribedManufacturers(Guid customerID, int page, int pageSize);
+        public Task<GetterResponses<NotificationViewDTO>> GetNotifications(Guid customerID, int page, int pageSize);
+        public Task<GetterResponses<CustomerViewDTO>> GetCustomers(int page,int pageSize);
     }
 }

@@ -4,6 +4,7 @@ using Kawerk.Infastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kawerk.Migrations
 {
     [DbContext(typeof(DbBase))]
-    partial class DbBaseModelSnapshot : ModelSnapshot
+    [Migration("20251228213001_AddBranchManager")]
+    partial class AddBranchManager
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -133,9 +136,6 @@ namespace Kawerk.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("varchar(2000)");
 
-                    b.Property<Guid?>("ManagerID")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("varchar(100)");
@@ -147,10 +147,6 @@ namespace Kawerk.Migrations
                         .HasColumnType("varchar(200)");
 
                     b.HasKey("ManufacturerID");
-
-                    b.HasIndex("ManagerID")
-                        .IsUnique()
-                        .HasFilter("[ManagerID] IS NOT NULL");
 
                     b.ToTable("Manufacturers");
                 });
@@ -383,16 +379,6 @@ namespace Kawerk.Migrations
                     b.Navigation("BranchManager");
                 });
 
-            modelBuilder.Entity("Kawerk.Domain.Manufacturer", b =>
-                {
-                    b.HasOne("Kawerk.Domain.Customer", "Manager")
-                        .WithOne("ManagedManufacturer")
-                        .HasForeignKey("Kawerk.Domain.Manufacturer", "ManagerID")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("Manager");
-                });
-
             modelBuilder.Entity("Kawerk.Domain.Notification", b =>
                 {
                     b.HasOne("Kawerk.Domain.Customer", "Customer")
@@ -494,8 +480,6 @@ namespace Kawerk.Migrations
             modelBuilder.Entity("Kawerk.Domain.Customer", b =>
                 {
                     b.Navigation("ManagedBranches");
-
-                    b.Navigation("ManagedManufacturer");
 
                     b.Navigation("Notifications");
 

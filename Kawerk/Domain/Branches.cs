@@ -18,6 +18,7 @@ namespace Kawerk.Domain
         public DateTime CreatedAt { get; set; }
 
         //Relationships
+        public Customer? BranchManager { get; set; }
         public List<Salesman> Salesmen { get; set; } = new List<Salesman>();
         public List<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     }
