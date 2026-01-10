@@ -32,5 +32,15 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(result);
         }
+        [HttpPost("sign-up-admin")]
+        public async Task<IActionResult> SignUpAdming([FromBody] CustomerCreationDTO customer)
+        {
+            var result = await _customerService.CreateAdmin(customer);
+
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
+            else
+                return Ok(result);
+        }
     }
 }

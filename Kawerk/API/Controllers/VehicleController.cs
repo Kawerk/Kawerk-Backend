@@ -1,6 +1,8 @@
 ﻿using Kawerk.Application.Interfaces;
 using Kawerk.Infastructure.DTOs.Vehicle;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Kawerk.API.Controllers
 {
@@ -22,6 +24,29 @@ namespace Kawerk.API.Controllers
             else
                 return Ok(new { message = result.msg });
         }
+
+        // New endpoint: import CSV
+        [HttpPost("import-csv")]
+        public async Task<IActionResult> ImportCsv()
+        {
+
+            var result = await _vehicleService.ImportVehiclesFromCsv();
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
+            else
+                return Ok(new { message = result.msg });
+        }
+        [Authorize(Policy = "AdminPolicy")]
+        [HttpDelete("delete-data")]
+        public async Task<IActionResult> DeleteData()
+        {
+            var result = await _vehicleService.DeleteAllData();
+            if (result.status == 0)
+                return BadRequest(new { message = result.msg });
+            else
+                return Ok(new { message = result.msg });
+        }
+
         [HttpPut("update/{vehicleID}")]
         public async Task<IActionResult> UpdateVehicle([FromRoute] Guid vehicleID, [FromBody] VehicleViewDTO vehicle)
         {

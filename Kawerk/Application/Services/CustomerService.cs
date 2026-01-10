@@ -5,6 +5,7 @@ using Kawerk.Infastructure.DTOs.Customer;
 using Kawerk.Infastructure.DTOs.Manufacturer;
 using Kawerk.Infastructure.DTOs.Notification;
 using Kawerk.Infastructure.DTOs.Vehicle;
+using Kawerk.Infastructure.Enums;
 using Kawerk.Infastructure.ResponseClasses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -59,11 +60,11 @@ namespace Kawerk.Application.Services
                 Email = customer.Email,
                 Password = new PasswordHasher<Customer>().HashPassword(null, customer.Password),
                 CreatedAt = DateTime.Now,
-                Role = "Customer"
+                Role = RoleEnum.Customer
             };
 
             var AccessToken = await _tokenHandler.CreateAccessToken(newCustomer.CustomerID, newCustomer.Name, newCustomer.Email, newCustomer.Role);
-            var RefreshToken = await _tokenHandler.RefreshingToken(newCustomer.CustomerID);
+            var RefreshToken = await _tokenHandler.CreateRefreshToken(newCustomer.CustomerID);
 
             //Saving to Database
             await _db.Customers.AddAsync(newCustomer);
@@ -73,6 +74,82 @@ namespace Kawerk.Application.Services
                 AccessToken = AccessToken,
                 RefreshToken = RefreshToken,
                 msg = "Customer created successfully" };
+        }
+        public async Task<ResponseToken> CreateAdmin(CustomerCreationDTO customer)
+        {
+            //Checking customerDTO validity
+            if (customer == null)
+                return new ResponseToken { status = 0, msg = "Faulty DTO" };
+
+            if (!IsEmailValid(customer.Email))
+                return new ResponseToken { status = 0, msg = "Invalid Email" };
+
+            if (!await IsPasswordValid(customer.Password))
+                return new ResponseToken { status = 0, msg = "Invalid Password" };
+
+            //Checking if User already exists
+            var isCustomerExists = await _db.Customers.AnyAsync(c => c.Username.ToLower() == customer.Username.ToLower() ||
+                                                     c.Email.ToLower() == customer.Email.ToLower());
+            //If User exists return
+            if (isCustomerExists)
+                return new ResponseToken { status = 0, msg = "Customer already exists" };
+
+            //Creating new Customer
+            Customer newCustomer = new Customer
+            {
+                CustomerID = Guid.NewGuid(),
+                Name = customer.Name,
+                Username = customer.Username,
+                Email = customer.Email,
+                Password = new PasswordHasher<Customer>().HashPassword(null, customer.Password),
+                CreatedAt = DateTime.Now,
+                Role = RoleEnum.Admin
+            };
+
+            var AccessToken = await _tokenHandler.CreateAccessToken(newCustomer.CustomerID, newCustomer.Name, newCustomer.Email, RoleEnum.Admin);
+            var RefreshToken = await _tokenHandler.CreateRefreshToken(newCustomer.CustomerID);
+
+            //Saving to Database
+            await _db.Customers.AddAsync(newCustomer);
+            await _db.SaveChangesAsync();
+            return new ResponseToken
+            {
+                status = 1,
+                AccessToken = AccessToken,
+                RefreshToken = RefreshToken,
+                msg = "Customer created successfully"
+            };
+        }
+        public async Task<ResponseToken> Login(string email, string password)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+                return new ResponseToken { status = 0, msg = "FaultyDTO" };
+
+            var isCustomerExists = await (from c in _db.Customers
+                                          where c.Email.ToLower() == email.ToLower()
+                                          select c).FirstOrDefaultAsync();
+
+            if(isCustomerExists == null)
+                return new ResponseToken { status = 0, msg = "User not found" };
+            
+            var result = new PasswordHasher<Customer>().VerifyHashedPassword(isCustomerExists,isCustomerExists.Password,password);
+            if (result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+                return new ResponseToken { status = 0, msg = "Invalid Password" };
+            else
+            {
+                //Creating Tokens
+                var AccessToken = await _tokenHandler.CreateAccessToken(isCustomerExists.CustomerID, isCustomerExists.Name, isCustomerExists.Email, isCustomerExists.Role);
+                var RefreshToken = await _tokenHandler.RefreshingToken(isCustomerExists.CustomerID);
+
+                //Returning Tokens 
+                return new ResponseToken
+                {
+                    status = 1,
+                    AccessToken = AccessToken,
+                    RefreshToken = RefreshToken,
+                    msg = "Login successful"
+                };
+            }
         }
         public async Task<SettersResponse> UpdateCustomer(Guid customerID,CustomerUpdateDTO customer)
         {
@@ -125,37 +202,6 @@ namespace Kawerk.Application.Services
             _db.Customers.Update(isCustomerExists);
             await _db.SaveChangesAsync();
             return new SettersResponse { status = 2, msg = "Updated Successfully" };
-        }
-        public async Task<ResponseToken> Login(string email, string password)
-        {
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
-                return new ResponseToken { status = 0, msg = "FaultyDTO" };
-
-            var isCustomerExists = await (from c in _db.Customers
-                                          where c.Email.ToLower() == email.ToLower()
-                                          select c).FirstOrDefaultAsync();
-
-            if(isCustomerExists == null)
-                return new ResponseToken { status = 0, msg = "User not found" };
-            
-            var result = new PasswordHasher<Customer>().VerifyHashedPassword(isCustomerExists,isCustomerExists.Password,password);
-            if (result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
-                return new ResponseToken { status = 0, msg = "Invalid Password" };
-            else
-            {
-                //Creating Tokens
-                var AccessToken = await _tokenHandler.CreateAccessToken(isCustomerExists.CustomerID, isCustomerExists.Name, isCustomerExists.Email, isCustomerExists.Role);
-                var RefreshToken = await _tokenHandler.RefreshingToken(isCustomerExists.CustomerID);
-
-                //Returning Tokens 
-                return new ResponseToken
-                {
-                    status = 1,
-                    AccessToken = AccessToken,
-                    RefreshToken = RefreshToken,
-                    msg = "Login successful"
-                };
-            }
         }
         public async Task<SettersResponse> DeleteCustomer(Guid customerID)
         {
@@ -429,13 +475,12 @@ namespace Kawerk.Application.Services
                 vehiclesQuery = vehiclesQuery.Where(u => u.Transaction!.CreatedDate < validEndDate);
             }
             if (!string.IsNullOrEmpty(searchTerm))
-                vehiclesQuery = vehiclesQuery.Where(u => u.Name.Contains(searchTerm) ||
+                vehiclesQuery = vehiclesQuery.Where(u =>
                 u.Description!.Contains(searchTerm) || u.Type!.Contains(searchTerm) || u.FuelType!.Contains(searchTerm));
             if (!string.IsNullOrEmpty(sortColumn))
             {
                 Expression<Func<Vehicle, object>> keySelector = sortColumn.ToLower() switch // throws error when sortColumn is null
                 {
-                    "name" or "n" => Vehicle => Vehicle.Name,
                     "price" or "p" => Vehicle => Vehicle.Price,
                     "type" or "t" => Vehicle => Vehicle.Type!,
                     "enginecapacity" or "ec" => Vehicle => Vehicle.EngineCapacity!,
@@ -451,17 +496,20 @@ namespace Kawerk.Application.Services
                                     .Select(v => new VehicleViewDTO
                                     {
                                         VehicleID = v.VehicleID,
-                                        Name = v.Name,
+                                        Model = v.Model!,
+                                        ManufacturerName = v.ManufacturerName,
                                         Description = v.Description,
                                         Price = v.Price,
                                         Type = v.Type,
-                                        EngineCapacity = v.EngineCapacity,
-                                        FuelType = v.FuelType,
-                                        SeatingCapacity = v.SeatingCapacity,
                                         Transmission = v.Transmission,
-                                        Year = v.Year,
+                                        FuelType = v.FuelType,
+                                        EngineCapacity = v.EngineCapacity,
+                                        SeatingCapacity = v.SeatingCapacity,
                                         Status = v.Status,
-                                        Images = v.Images
+                                        HorsePower = v.HorsePower,
+                                        DaysOnMarket = v.DaysOnMarket,
+                                        ConditionScore = v.ConditionScore,
+                                        Year = v.Year,
                                     });
 
 
@@ -488,13 +536,13 @@ namespace Kawerk.Application.Services
                 vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate < validEndDate);
             }
             if (!string.IsNullOrEmpty(searchTerm))
-                vehiclesQuery = vehiclesQuery.Where(u => u.Name.Contains(searchTerm) ||
+                vehiclesQuery = vehiclesQuery.Where(u => u.Model.Contains(searchTerm) ||
                 u.Description.Contains(searchTerm) || u.Type.Contains(searchTerm) || u.FuelType.Contains(searchTerm));
             if (!string.IsNullOrEmpty(sortColumn))
             {
                 Expression<Func<Vehicle, object>> keySelector = sortColumn.ToLower() switch // throws error when sortColumn is null
                 {
-                    "name" or "n" => Vehicle => Vehicle.Name,
+                    "name" or "n" => Vehicle => Vehicle.Model,
                     "price" or "p" => Vehicle => Vehicle.Price,
                     "type" or "t" => Vehicle => Vehicle.Type,
                     "enginecapacity" or "ec" => Vehicle => Vehicle.EngineCapacity,
@@ -509,19 +557,21 @@ namespace Kawerk.Application.Services
             var vehiclesResponse = vehiclesQuery
                                     .Select(v => new VehicleSellerViewDTO
                                     {
-                                        SellerID = v.SellerID,
                                         VehicleID = v.VehicleID,
-                                        Name = v.Name,
+                                        Model = v.Model!,
+                                        ManufacturerName = v.ManufacturerName,
                                         Description = v.Description,
                                         Price = v.Price,
                                         Type = v.Type,
-                                        EngineCapacity = v.EngineCapacity,
-                                        FuelType = v.FuelType,
-                                        SeatingCapacity = v.SeatingCapacity,
                                         Transmission = v.Transmission,
-                                        Year = v.Year,
+                                        FuelType = v.FuelType,
+                                        EngineCapacity = v.EngineCapacity,
+                                        SeatingCapacity = v.SeatingCapacity,
                                         Status = v.Status,
-                                        Images = v.Images
+                                        HorsePower = v.HorsePower,
+                                        DaysOnMarket = v.DaysOnMarket,
+                                        ConditionScore = v.ConditionScore,
+                                        Year = v.Year,
                                     });
 
 

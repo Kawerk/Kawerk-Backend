@@ -7,11 +7,20 @@ namespace Kawerk.Domain
     {
         [Key]
         public Guid VehicleID { get; set; }
-        [Column(TypeName ="varchar(200)")]
-        public required string Name { get; set; }
+        [Column(TypeName = "varchar(50)")]
+        public string? ManufacturerName {  get; set; }
+        [Column(TypeName = "varchar(200)")]
+        public string? Model { get; set; }
         [Column(TypeName ="varchar(2000)")]
         public string? Description { get; set; }
+        [Column(TypeName = "varchar(100)")]
+        public string? Country { get; set; }
+        [Column(TypeName = "varchar(100)")]
+        public string? City { get; set; }
         public int Price { get; set; }
+        public float? ConditionScore {  get; set; }
+        public int? DaysOnMarket { get; set; }
+        public int? HorsePower { get; set; }
         [Column(TypeName = "varchar(100)")]
         public string? Type { get; set; }
         [Column(TypeName = "varchar(100)")]
@@ -25,9 +34,11 @@ namespace Kawerk.Domain
         public string? FuelType { get; set; }
         [Column(TypeName = "varchar(50)")]
         public string? Status { get; set; }
+        public int Doors { get; set; }
+        [Column(TypeName = "varchar(50)")]
+        public string? Color { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<string>? Images { get; set; }
-        public string ManufacturerName => string.IsNullOrEmpty(Manufacturer.Name)? Seller.Name : Manufacturer.Name;
 
         //Relationships
         public Manufacturer? Manufacturer { get; set; }

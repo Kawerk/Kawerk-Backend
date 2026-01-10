@@ -151,7 +151,7 @@ namespace Kawerk.Application.Services
                     {
                         NotificationId = Guid.NewGuid(),
                         Title = "New Vehicle Sold",
-                        Message = $"A new vehicle '{isVehicleExists.Name}' has been sold by manufacturer '{isManufacturerExists.Name}'.",
+                        Message = $"A new vehicle '{isVehicleExists.Model}' has been sold by manufacturer '{isManufacturerExists.Name}'.",
                         CreatedAt = DateTime.UtcNow,
                         CustomerID = subscriber.CustomerID,
                         Customer = subscriber
@@ -211,26 +211,26 @@ namespace Kawerk.Application.Services
             DateTime validStartDate, validEndDate;
             if (DateTime.TryParse(startDate, out validStartDate))
             {
-                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate > validStartDate);
+                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction!.CreatedDate > validStartDate);
             }
             if (DateTime.TryParse(endDate, out validEndDate))
             {
-                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction.CreatedDate < validEndDate);
+                vehiclesQuery = vehiclesQuery.Where(u => u.Transaction!.CreatedDate < validEndDate);
             }
             if (!string.IsNullOrEmpty(searchTerm))
-                vehiclesQuery = vehiclesQuery.Where(u => u.Name.Contains(searchTerm) ||
-                u.Description.Contains(searchTerm) || u.Type.Contains(searchTerm) || u.FuelType.Contains(searchTerm));
+                vehiclesQuery = vehiclesQuery.Where(u => u.Model!.Contains(searchTerm) ||
+                u.Description!.Contains(searchTerm) || u.Type!.Contains(searchTerm) || u.FuelType!.Contains(searchTerm));
             if (!string.IsNullOrEmpty(sortColumn))
             {
                 Expression<Func<Vehicle, object>> keySelector = sortColumn.ToLower() switch // throws error when sortColumn is null
                 {
-                    "name" or "n" => Vehicle => Vehicle.Name,
+                    "name" or "n" => Vehicle => Vehicle.Model!,
                     "price" or "p" => Vehicle => Vehicle.Price,
-                    "type" or "t" => Vehicle => Vehicle.Type,
-                    "enginecapacity" or "ec" => Vehicle => Vehicle.EngineCapacity,
-                    "fueltype" or "f" => Vehicle => Vehicle.FuelType,
+                    "type" or "t" => Vehicle => Vehicle.Type!,
+                    "enginecapacity" or "ec" => Vehicle => Vehicle.EngineCapacity!,
+                    "fueltype" or "f" => Vehicle => Vehicle.FuelType!,
                     "seatingcapacity" or "sc" => Vehicle => Vehicle.SeatingCapacity,
-                    "status" or "s" => Vehicle => Vehicle.Status,
+                    "status" or "s" => Vehicle => Vehicle.Status!,
                     _ => Vehicle => Vehicle.VehicleID,
                 };
                 if (!string.IsNullOrEmpty(OrderBy)) vehiclesQuery = vehiclesQuery.OrderBy(keySelector);
@@ -241,17 +241,20 @@ namespace Kawerk.Application.Services
                                     {
                                         ManufacturerID = v.ManufacturerID,
                                         VehicleID = v.VehicleID,
-                                        Name = v.Name,
+                                        Model = v.Model!,
+                                        ManufacturerName = v.ManufacturerName,
                                         Description = v.Description,
                                         Price = v.Price,
                                         Type = v.Type,
-                                        EngineCapacity = v.EngineCapacity,
-                                        FuelType = v.FuelType,
-                                        SeatingCapacity = v.SeatingCapacity,
                                         Transmission = v.Transmission,
-                                        Year = v.Year,
+                                        FuelType = v.FuelType,
+                                        EngineCapacity = v.EngineCapacity,
+                                        SeatingCapacity = v.SeatingCapacity,
                                         Status = v.Status,
-                                        Images = v.Images
+                                        HorsePower = v.HorsePower,
+                                        DaysOnMarket = v.DaysOnMarket,
+                                        ConditionScore = v.ConditionScore,
+                                        Year = v.Year,
                                     });
 
 

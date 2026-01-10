@@ -302,11 +302,29 @@ namespace Kawerk.Migrations
                     b.Property<Guid?>("BuyerID")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("City")
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<float?>("ConditionScore")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Country")
+                        .HasColumnType("varchar(100)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("DaysOnMarket")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .HasColumnType("varchar(2000)");
+
+                    b.Property<int>("Doors")
+                        .HasColumnType("int");
 
                     b.Property<string>("EngineCapacity")
                         .HasColumnType("varchar(100)");
@@ -314,14 +332,19 @@ namespace Kawerk.Migrations
                     b.Property<string>("FuelType")
                         .HasColumnType("varchar(100)");
 
+                    b.Property<int?>("HorsePower")
+                        .HasColumnType("int");
+
                     b.PrimitiveCollection<string>("Images")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("ManufacturerID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
+                    b.Property<string>("ManufacturerName")
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Model")
                         .HasColumnType("varchar(200)");
 
                     b.Property<int>("Price")

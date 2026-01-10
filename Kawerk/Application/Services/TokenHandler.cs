@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Kawerk.Application.Services
 {
@@ -49,9 +50,18 @@ namespace Kawerk.Application.Services
 
             return await Task.FromResult(new JwtSecurityTokenHandler().WriteToken(TokenDescriptor));
         }
-        public string CreateRefreshToken()//For creating new RefreshTokens
+        public async Task<string> CreateRefreshToken(Guid customerID)//For creating new RefreshTokens
         {
-            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            string token = GenerateRandomToken();
+            var RefreshToken = new RefreshTokens
+            {
+                RefreshToken = token,
+                CustomerID = customerID,
+                Expires = DateTime.UtcNow.AddDays(4)
+            };
+            await _db.RefreshTokens.AddAsync(RefreshToken);
+            //await _db.SaveChangesAsync();
+            return token;
         }
         public async Task<string?> RefreshingToken(Guid CustomerID) //For logging in
         {
@@ -59,25 +69,17 @@ namespace Kawerk.Application.Services
                                  where token.CustomerID == CustomerID
                                  select token).FirstOrDefault();
 
-            string refreshToken = CreateRefreshToken();
-            if (isTokenExists == null)
-            {
-                RefreshTokens newToken = new RefreshTokens
-                {
-                    RefreshToken = refreshToken,
-                    CustomerID = CustomerID,
-                    Expires = DateTime.UtcNow.AddDays(4)
-                };
-                await _db.RefreshTokens.AddAsync(newToken);
-            }
-            else
-            {
-                isTokenExists.Expires = DateTime.UtcNow.AddDays(4);
-                isTokenExists.RefreshToken = refreshToken;
-                _db.RefreshTokens.Update(isTokenExists);
-            }
+            string refreshToken = GenerateRandomToken();
+            
+            isTokenExists.Expires = DateTime.UtcNow.AddDays(4);
+            isTokenExists.RefreshToken = refreshToken;
+            _db.RefreshTokens.Update(isTokenExists);
             await _db.SaveChangesAsync();
             return refreshToken;
+        }
+        public static string GenerateRandomToken()
+        {
+            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
         }
 
         //-----------------------------------------------------------------------
